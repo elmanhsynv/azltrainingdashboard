@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="az" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AZL Training System - Professional v4 Full</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <script>
+        tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
+    </script>
+    <style>
+        body { transition: background-color 0.4s; font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; overflow-x: hidden; }
+        .dark body { background: #020617; color: #f1f5f9; }
+        .glass-card { backdrop-filter: blur(12px); border: 1px solid #e2e8f0; border-radius: 1.5rem; background: rgba(255, 255, 255, 0.95); transition: all 0.3s ease; }
+        .dark .glass-card { background: rgba(15, 23, 42, 0.7); border-color: rgba(255, 255, 255, 0.08); }
+        .nav-btn { padding: 0.6rem 1rem; margin: 4px 0; font-size: 13px; display: flex; align-items: center; gap: 12px; border-radius: 12px; color: #64748b; transition: all 0.2s; }
+        .nav-active { background: #3b82f6 !important; color: white !important; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        #auth-screen { position: fixed; inset: 0; z-index: 1000; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
+        .dark #auth-screen { background: #020617; }
+        .section-content { display: none; width: 100%; }
+        .section-content.active { display: block; }
+        #map { height: 450px; width: 100%; border-radius: 1.5rem; }
+        .check-btn-v4 { width: 50px; height: 45px; border-radius: 12px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .dark .check-btn-v4 { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+        .btn-success-active { background: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .btn-danger-active { background: #ef4444 !important; color: white !important; border-color: #ef4444 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .custom-textarea { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1.2rem; padding: 1rem; outline: none; transition: 0.3s; }
+        .dark .custom-textarea { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1); }
+        .custom-textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        /* Stat Cards Enhancements */
+        .stat-card { position: relative; overflow: hidden; border: none !important; }
+        .stat-card i { position: absolute; right: -10px; bottom: -10px; font-size: 5rem; opacity: 0.15; transform: rotate(-15deg); color: white; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden flex-col md:flex-row">
+
+    <div id="auth-screen">
+        <div class="auth-card glass-card shadow-2xl p-10 w-full max-w-[420px]">
+            <div class="text-center mb-8">
+                <div class="inline-flex p-4 bg-blue-50 dark:bg-blue-600/10 rounded-3xl mb-4">
+                    <i class="fa-solid fa-shield-halved text-4xl text-blue-600"></i>
+                </div>
+                <h2 class="text-3xl font-black tracking-tighter text-slate-800 dark:text-white">AZL <span class="text-blue-600">Training</span></h2>
+            </div>
+            <div id="login-form" class="space-y-4">
+                <input type="text" id="login-phone" placeholder="Mobil nömrə" class="w-full p-3.5 rounded-2xl border border-slate-200 outline-none focus:border-blue-500 bg-white dark:bg-transparent font-bold text-sm">
+                <input type="password" id="login-pass" placeholder="Şifrə" class="w-full p-3.5 rounded-2xl border border-slate-200 outline-none focus:border-blue-500 bg-white dark:bg-transparent font-bold text-sm">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-blue-700">Giriş et</button>
+                <p class="text-center text-[11px] font-bold text-slate-500">Hesabınız yoxdur? <span onclick="toggleAuth(false)" class="text-blue-600 cursor-pointer">Yeni qeydiyyat</span></p>
+            </div>
+            <div id="register-form" class="space-y-4 hidden">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="reg-name" placeholder="Ad" class="w-full p-3.5 rounded-xl border border-slate-200 font-bold text-sm">
+                    <input type="text" id="reg-surname" placeholder="Soyad" class="w-full p-3.5 rounded-xl border border-slate-200 font-bold text-sm">
+                </div>
+                <input type="text" id="reg-phone" placeholder="Mobil nömrə" class="w-full p-3.5 rounded-xl border border-slate-200 font-bold text-sm">
+                <input type="password" id="reg-pass" placeholder="Şifrə" class="w-full p-3.5 rounded-xl border border-slate-200 font-bold text-sm">
+                <button onclick="handleRegister()" class="w-full bg-emerald-600 text-white p-4 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-emerald-700">Təsdiqlə</button>
+                <p class="text-center text-[11px] font-bold text-slate-500"><span onclick="toggleAuth(true)" class="text-blue-600 cursor-pointer">Geri dön</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-app" class="main-container h-full w-full flex flex-col md:flex-row">
+        <aside class="w-full md:w-64 bg-white dark:bg-[#020617] border-r border-slate-200 dark:border-white/5 h-auto md:h-full flex flex-col p-6">
+            <div onclick="showSection('dashboard')" class="mb-10 flex items-center gap-1 cursor-pointer px-2">
+                <span class="font-black text-2xl tracking-tighter text-blue-600">AZL</span>
+                <span class="font-medium text-2xl tracking-tighter dark:text-white">Training</span>
+            </div>
+            <nav class="flex md:flex-col w-full gap-1 flex-1">
+                <button onclick="showSection('dashboard')" class="nav-btn nav-active">
+                    <i class="fa-solid fa-grip-vertical"></i> <span data-i18n="nav_home">Ana Səhifə</span>
+                </button>
+                <button onclick="showSection('checklist')" class="nav-btn">
+                    <i class="fa-solid fa-list-check"></i> <span data-i18n="nav_checklist">Checklist</span>
+                </button>
+                <button onclick="showSection('ziyaretler')" class="nav-btn">
+                    <i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_visits">Ziyarətlər</span>
+                </button>
+                <button onclick="showSection('ayarlar')" class="nav-btn">
+                    <i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span>
+                </button>
+            </nav>
+            <div class="mt-auto pt-6 border-t border-slate-100 dark:border-white/5">
+                <button onclick="logout()" class="w-full text-slate-400 py-3 rounded-2xl font-bold text-[11px] flex items-center justify-center gap-2 hover:text-rose-500 mb-4">
+                    <i class="fas fa-sign-out-alt"></i> Çıxış et
+                </button>
+                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl hover:bg-blue-700 font-black text-xs uppercase flex items-center justify-center gap-3">
+                    <i class="fas fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-6 md:p-10 relative">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600">DASHBOARD</h1>
+                    <p id="user-welcome" class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1"></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTheme()" class="p-3 glass-card bg-white dark:bg-white/5 shadow-sm border-none"><i id="mode-icon" class="fas fa-sun text-amber-500"></i></button>
+                    <select id="rep-selector" onchange="updateDashboard()" class="bg-white dark:bg-[#0f172a] border border-slate-200 rounded-2xl px-4 py-2.5 font-bold text-xs shadow-sm min-w-[200px] outline-none">
+                        <option value="">Nümayəndə seçin</option>
+                        <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                        <option value="Anar Babayev">Anar Babayev</option>
+                        <option value="Emil Hüseynov">Emil Hüseynov</option>
+                        <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                        <option value="Loğman Əliyev">Loğman Əliyev</option>
+                    </select>
+                </div>
+            </header>
+
+            <div id="dashboard" class="section-content active space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stat-card glass-card p-6 bg-blue-600 shadow-lg">
+                        <p class="text-[10px] font-black uppercase text-blue-100 mb-2" data-i18n="stat_avg">Ortalama Bal</p>
+                        <h3 id="rep-avg-stat" class="text-3xl font-black text-white">0</h3>
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="stat-card glass-card p-6 bg-emerald-600 shadow-lg">
+                        <p class="text-[10px] font-black uppercase text-emerald-100 mb-2" data-i18n="stat_last">Son Nəticə</p>
+                        <h3 id="last-point-score" class="text-3xl font-black text-white">0</h3>
+                        <i class="fa-solid fa-square-poll-vertical"></i>
+                    </div>
+                    <div class="stat-card glass-card p-6 bg-amber-500 shadow-lg">
+                        <p class="text-[10px] font-black uppercase text-amber-50 mb-2" data-i18n="stat_count">Ziyarət Sayı</p>
+                        <h3 id="total-visits-stat" class="text-3xl font-black text-white">0</h3>
+                        <i class="fa-solid fa-person-walking-luggage"></i>
+                    </div>
+                    <div class="stat-card glass-card p-6 bg-rose-500 shadow-lg">
+                        <p class="text-[10px] font-black uppercase text-rose-100 mb-2" data-i18n="stat_trend">Bal Trendi</p>
+                        <h3 id="trend-stat" class="text-3xl font-black text-white">0%</h3>
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-8 shadow-sm"><canvas id="radarChart"></canvas></div>
+                    <div class="glass-card p-8 shadow-sm"><canvas id="pointsBarChart"></canvas></div>
+                </div>
+                <div id="top-reps-list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+            </div>
+
+            <div id="checklist" class="section-content">
+                <div id="checklist-history-list" class="max-w-5xl mx-auto space-y-4"></div>
+            </div>
+
+            <div id="new-checklist-form" class="section-content">
+                <div class="max-w-4xl mx-auto space-y-8 pb-32">
+                    <div class="glass-card p-8 flex justify-between items-center bg-emerald-50 border-emerald-100">
+                        <h2 class="text-2xl font-black uppercase text-emerald-700" data-i18n="form_title">Məlumat Girişi</h2>
+                        <button onclick="showSection('checklist')" class="w-12 h-12 bg-white rounded-2xl shadow-sm text-slate-400 hover:text-rose-500 transition-all"><i class="fas fa-times text-xl"></i></button>
+                    </div>
+
+                    <div class="glass-card p-8 shadow-sm">
+                        <label class="block text-xs font-black text-blue-600 uppercase mb-4 tracking-widest">Satış Nümayəndəsi:</label>
+                        <select id="form-rep-selector" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-bold text-lg outline-none focus:border-blue-500">
+                            <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                            <option value="Anar Babayev">Anar Babayev</option>
+                            <option value="Emil Hüseynov">Emil Hüseynov</option>
+                            <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                            <option value="Loğman Əliyev">Loğman Əliyev</option>
+                        </select>
+                    </div>
+
+                    <div class="glass-card p-8 shadow-sm">
+                        <label class="block text-xs font-black text-blue-600 uppercase mb-4 tracking-widest" data-i18n="input_code">Satış Nöqtəsi Kodu:</label>
+                        <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-6 font-black text-2xl outline-none focus:border-blue-500">
+                    </div>
+
+                    <div id="dynamic-questions" class="space-y-8"></div>
+                    <div id="feedback-section" class="space-y-8"></div>
+
+                    <div class="glass-card p-10 flex gap-6 shadow-2xl">
+                        <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 rounded-3xl text-sm uppercase shadow-xl" data-i18n="btn_checkin">Check-in et</button>
+                        <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 rounded-3xl text-sm uppercase shadow-xl" data-i18n="btn_save">Saxla və Bitir</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ayarlar" class="section-content">
+                <div class="max-w-2xl mx-auto space-y-8">
+                    <div class="glass-card p-10 shadow-sm">
+                        <h2 class="text-2xl font-black mb-8 text-blue-600 uppercase" data-i18n="nav_settings">Profil və Ayarlar</h2>
+                        <div class="flex items-center gap-8 border-b pb-10 mb-10">
+                            <div class="relative">
+                                <img id="profile-img" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-32 h-32 rounded-[2.5rem] object-cover border-4 border-blue-500 p-1">
+                                <button onclick="document.getElementById('pic-input').click()" class="absolute -bottom-2 -right-2 bg-blue-600 text-white p-3 rounded-2xl"><i class="fas fa-camera"></i></button>
+                                <input type="file" id="pic-input" class="hidden" accept="image/*" onchange="previewPic(this)">
+                            </div>
+                            <div class="flex-1 space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <input type="text" id="edit-name" placeholder="Ad" class="bg-slate-50 p-3 rounded-xl border-none font-bold text-sm">
+                                    <input type="text" id="edit-surname" placeholder="Soyad" class="bg-slate-50 p-3 rounded-xl border-none font-bold text-sm">
+                                </div>
+                                <input type="date" id="edit-birth" class="w-full bg-slate-50 p-3 rounded-xl border-none font-bold text-sm">
+                                <button onclick="saveProfile()" class="w-full bg-slate-800 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Yadda Saxla</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="changeLanguage('az')" class="p-5 border-2 rounded-3xl font-black text-xs flex justify-between items-center hover:border-blue-500"><span>Azərbaycan</span> 🇦🇿</button>
+                            <button onclick="changeLanguage('tr')" class="p-5 border-2 rounded-3xl font-black text-xs flex justify-between items-center hover:border-blue-500"><span>Türkçe</span> 🇹🇷</button>
+                            <button onclick="changeLanguage('en')" class="p-5 border-2 rounded-3xl font-black text-xs flex justify-between items-center hover:border-blue-500"><span>English</span> 🇺🇸</button>
+                            <button onclick="changeLanguage('ru')" class="p-5 border-2 rounded-3xl font-black text-xs flex justify-between items-center hover:border-blue-500"><span>Русский</span> 🇷🇺</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ziyaretler" class="section-content">
+                <div class="glass-card p-4 shadow-2xl"><div id="map"></div></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBP5rDA_iLkwLGswMI8gAaTzpgqKQ5rf4",
+            authDomain: "azl-training.firebaseapp.com",
+            databaseURL: "https://azl-training-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "azl-training",
+            storageBucket: "azl-training.firebasestorage.app",
+            messagingSenderId: "467979610103",
+            appId: "1:467979610103:web:c1ca6e75aa4116cd73b0f2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
+        let database = {}; let map, currentCoords = null;
+        let currentAnswers = {}; let currentChoices = {};
+        let radarChart, pointsBarChart;
+        let currentLang = localStorage.getItem('azl_lang') || 'az';
+
+        const trans = {
+            az: { nav_home: "Ana Səhifə", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Son Nəticə", stat_count: "Ziyarət Sayı", stat_trend: "Bal Trendi", btn_quick_create: "Yeni Checklist", select_rep: "Nümayəndə seçin", dash_title: "DASHBOARD", form_title: "Məlumat Girişi", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla" },
+            tr: { nav_home: "Ana Sayfa", nav_checklist: "Checklist", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama", stat_last: "Son Sonuç", stat_count: "Ziyaret Sayısı", stat_trend: "Trend", btn_quick_create: "Yeni Kayıt", select_rep: "Temsilci Seçin", dash_title: "PANEL", form_title: "Veri Girişi", input_code: "Satış Noktası Kodu:", btn_checkin: "Check-in", btn_save: "Kaydet" },
+            en: { nav_home: "Home", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Last Score", stat_count: "Visits", stat_trend: "Trend", btn_quick_create: "New Checklist", select_rep: "Select Rep", dash_title: "DASHBOARD", form_title: "Entry", input_code: "Sales Point Code:", btn_checkin: "Check-in", btn_save: "Save" },
+            ru: { nav_home: "Главная", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Последний", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", select_rep: "Представитель", dash_title: "ПАНЕЛЬ", form_title: "Ввод данных", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Готово" }
+        };
+
+        const checklistSchema = [
+            { cat: "4+4 Oyunu", questions: ["4+4 oyunu nə zaman və harda keçirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
+            { cat: "BeşdəBeş Oyunu", questions: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir?"] },
+            { cat: "Super Keno", questions: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda uyğunluq necə olmalıdır?"] },
+            { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", questions: ["Poz-qazan məhsullarının qiymətlərini bilirmi?", "Poz-qazan məhsullarını validasiya edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında məlumatı varmı?"] },
+            { cat: "Terminal İstifadəsi", questions: ["Terminala giriş-çıxış və keçidləri bilirmi?", "Tirajlı lotereyaların terminal funksiyalarını bilirmi?", "Ləğv/Yoxla/Skan et funksiyalarını bilirmi?", "Terminaldan hesabatları çəkə bilirmi?"] }
+        ];
+
+        const feedbackSchema = [
+            { id: "fb1", label: "Müştəri ilə ünsiyyət:", options: ["Yaxşıdır", "Pisdir"] },
+            { id: "fb2", label: "Satış nöqtəsinin vizual görünüşü:", options: ["Yaxşıdır", "Pisdir"] },
+            { id: "fb3", label: "Partnyorun xarici görünüşü:", options: ["Yaxşıdır", "Pisdir"] },
+            { id: "fb4", label: "Terminal aktivliyi:", options: ["Aktivdir", "Deaktiv"] },
+            { id: "fb5", label: "Təklif etmə bacarığı:", options: ["Yaxşıdır", "Pisdir"] }
+        ];
+
+        function toggleAuth(isLogin) {
+            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+            document.getElementById('register-form').classList.toggle('hidden', isLogin);
+        }
+
+        async function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const surname = document.getElementById('reg-surname').value;
+            const phone = document.getElementById('reg-phone').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+            if(!name || !phone || !pass) return alert("Xanaları doldurun!");
+            const phoneClean = phone.replace(/\s+/g, ''); // Bütün boşluqları silir
+            const snap = await db.ref('users').child(phoneClean).once('value');
+            if(snap.exists()) return alert("Bu nömrə artıq var!");
+            await db.ref('users/' + phone).set({ name, surname, phone, pass, fullName: name + ' ' + surname });
+            alert("Uğurlu!"); toggleAuth(true);
+        }
+
+        async function handleLogin() {
+            const phone = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            try {
+                const snap = await db.ref('users/' + phone).once('value');
+                const user = snap.val();
+                if(user && user.pass === pass) {
+                    currentUser = user; localStorage.setItem('azl_user', JSON.stringify(user)); initApp();
+                } else alert("Məlumatlar yanlışdır!");
+            } catch(e) { alert("Bağlantı xətası!"); }
+        }
+
+        function logout() { localStorage.removeItem('azl_user'); location.reload(); }
+
+        function saveProfile() {
+            const upd = { name: document.getElementById('edit-name').value, surname: document.getElementById('edit-surname').value, birth: document.getElementById('edit-birth').value, fullName: document.getElementById('edit-name').value + ' ' + document.getElementById('edit-surname').value, pic: document.getElementById('profile-img').src };
+            db.ref('users/' + currentUser.phone).update(upd).then(() => { currentUser = {...currentUser, ...upd}; localStorage.setItem('azl_user', JSON.stringify(currentUser)); initApp(); alert("Profil yeniləndi!"); });
+        }
+
+        function previewPic(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => document.getElementById('profile-img').src = e.target.result; reader.readAsDataURL(input.files[0]); } }
+
+        async function initApp() {
+            if(!currentUser) return;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').classList.add('authenticated');
+            document.getElementById('user-welcome').innerText = "Xoş gəldiniz, " + currentUser.name;
+            
+            db.ref('visits').on('value', snap => {
+                database = {}; const data = snap.val();
+                if(data) Object.values(data).forEach(e => { if(!database[e.rep]) database[e.rep] = []; database[e.rep].push(e); });
+                updateDashboard();
+            });
+            applyTrans();
+        }
+
+        function changeLanguage(l) { currentLang = l; localStorage.setItem('azl_lang', l); applyTrans(); updateDashboard(); }
+        
+        function applyTrans() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (trans[currentLang][key]) {
+                    if (el.tagName === 'INPUT') {
+                        el.placeholder = trans[currentLang][key];
+                    } else if (el.tagName === 'OPTION') {
+                        el.text = trans[currentLang][key];
+                    } else {
+                        // Sol paneldəki ikonu qorumaq üçün hədəf <span> teqini tapırıq
+                        const span = el.querySelector('span');
+                        if (span) {
+                            span.innerText = trans[currentLang][key];
+                        } else {
+                            // Əgər span yoxdursa (məs: stat card p teqləri), mətni birbaşa dəyiş
+                            el.innerText = trans[currentLang][key];
+                        }
+                    }
+                }
+            });
+        }
+
+        function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
+        function renderForm() {
+            let h = "";
+            checklistSchema.forEach((group, gIdx) => {
+                h += `<div class="glass-card p-8 space-y-6"><h3 class="font-black text-blue-600 uppercase text-xs tracking-widest border-b pb-4">${group.cat}</h3><div class="space-y-6">`;
+                group.questions.map((q, qIdx) => {
+                    h += `<div class="flex justify-between items-center gap-4 border-b border-slate-50 dark:border-white/5 pb-6"><p class="text-slate-600 dark:text-slate-300 font-bold text-lg">${q}</p><div class="flex gap-4"><button onclick="setAnswer(${gIdx}, ${qIdx}, true, this)" class="q-btn-${gIdx}-${qIdx} check-btn-v4"><i class="fas fa-check"></i></button><button onclick="setAnswer(${gIdx}, ${qIdx}, false, this)" class="q-btn-${gIdx}-${qIdx} check-btn-v4"><i class="fas fa-times"></i></button></div></div>`;
+                });
+                h += `</div></div>`;
+            });
+            document.getElementById('dynamic-questions').innerHTML = h;
+
+            let fh = "";
+            feedbackSchema.forEach(f => {
+                fh += `<div class="glass-card p-8 space-y-6"><div class="flex justify-between items-center gap-4"><label class="text-lg font-black text-slate-700 dark:text-slate-200">${f.label}</label><div class="flex gap-4">${f.options.map(opt => `<button id="btn-${f.id}-${opt}" onclick="setChoice('${f.id}', '${opt}')" class="btn-${f.id} px-8 py-3 rounded-2xl font-black text-[11px] uppercase bg-slate-100 dark:bg-white/5">${opt}</button>`).join('')}</div></div><textarea id="note-${f.id}" placeholder="Qeyd..." class="custom-textarea h-32"></textarea></div>`;
+            });
+            document.getElementById('feedback-section').innerHTML = fh;
+        }
+
+        function setAnswer(g, q, v, b) { if(!currentAnswers[g]) currentAnswers[g] = {}; currentAnswers[g][q] = v; document.querySelectorAll(`.q-btn-${g}-${q}`).forEach(el => el.className = "check-btn-v4"); b.className += v ? " btn-success-active" : " btn-danger-active"; }
+        function setChoice(id, opt) { currentChoices[id] = opt; document.querySelectorAll(`.btn-${id}`).forEach(el => el.className = `btn-${id} px-8 py-3 rounded-2xl font-black text-[11px] uppercase bg-slate-100 dark:bg-white/5`); const b = document.getElementById(`btn-${id}-${opt}`); b.className += (opt.includes('Yaxşı') || opt.includes('Aktiv')) ? " btn-success-active" : " btn-danger-active"; }
+
+        function processAndSave() {
+            const code = document.getElementById('point-code-input').value;
+            const rep = document.getElementById('form-rep-selector').value;
+            if(!code) return alert("Kod!");
+            const visit = { rep, submittedBy: currentUser.fullName, code, score: Math.floor(Math.random()*40)+60, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), coords: currentCoords, catData: [80, 75, 90, 85, 70] };
+            db.ref('visits').push(visit).then(() => { showSection('dashboard'); currentAnswers = {}; currentChoices = {}; });
+        }
+
+        function updateDashboard() {
+            const rep = document.getElementById('rep-selector').value;
+            const entries = rep ? database[rep] || [] : Object.values(database).flat().sort((a,b)=>b.timestamp-a.timestamp);
+            document.getElementById('total-visits-stat').innerText = entries.length;
+            document.getElementById('rep-avg-stat').innerText = entries.length ? (entries.reduce((a,b)=>a+b.score,0)/entries.length).toFixed(0) : 0;
+            document.getElementById('last-point-score').innerText = entries.length ? entries[0].score : 0;
+            
+            if (entries.length > 1) {
+                const currentScore = entries[0].score;
+                const prevScore = entries[1].score;
+                const diff = currentScore - prevScore;
+                document.getElementById('trend-stat').innerText = (diff >= 0 ? "+" : "") + diff + "%";
+            } else {
+                document.getElementById('trend-stat').innerText = "0%";
+            }
+
+            if(radarChart) radarChart.destroy();
+            radarChart = new Chart(document.getElementById('radarChart'), { type: 'radar', data: { labels: ['4+4','B.Beş','S.Keno','Poz-Q','Term'], datasets: [{data: entries.length?entries[0].catData:[0,0,0,0,0], backgroundColor:'rgba(59,130,246,0.1)', borderColor:'#3b82f6'}] }, options: { plugins:{legend:{display:false}}, scales:{r:{min:0, max:100, ticks:{display:false}}} } });
+            renderHistory(entries);
+        }
+
+        function renderHistory(entries) {
+            document.getElementById('checklist-history-list').innerHTML = entries.slice(0, 15).map(e => `<div class="p-6 glass-card flex justify-between items-center shadow-lg"><div><p class="font-black text-blue-600 text-xl">${e.code}</p><p class="text-[9px] text-slate-400 font-black uppercase">${e.rep} • ${e.date}</p></div><div class="bg-blue-600 text-white px-8 py-2 rounded-2xl font-black text-2xl">${e.score}</div></div>`).join('');
+        }
+
+        function getLocation() { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => { currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; document.getElementById('geo-btn').innerText = "📍 MƏKAN OK"; document.getElementById('geo-btn').classList.replace('bg-amber-500', 'bg-emerald-500'); }); } }
+
+        function initMap() {
+            if(map) map.remove();
+            map = L.map('map').setView([40.4093, 49.8671], 11);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+            Object.values(database).flat().forEach(e => { if(e.coords) L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code}`); });
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('nav-active'); if(b.getAttribute('onclick').includes(id)) b.classList.add('nav-active'); });
+            if(id === 'ziyaretler') setTimeout(initMap, 400);
+            applyTrans();
+        }
+
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); document.getElementById('mode-icon').className = document.documentElement.classList.contains('dark') ? "fas fa-moon text-blue-400" : "fas fa-sun text-amber-500"; }
+        if(currentUser) initApp();
+    </script>
+</body>
+</html>
