@@ -290,34 +290,61 @@
     if(!phone || !pass) return alert("Xanaları doldurun!");
 
     try {
-        // Nömrəni bazadan birbaşa axtarırıq
         const snap = await db.ref('users').child(phone).once('value');
         const user = snap.val();
 
-        if(user) {
-            if(user.pass === pass) {
-                currentUser = user;
-                localStorage.setItem('azl_user', JSON.stringify(user));
-                initApp();
-            } else {
-                alert("Şifrə yanlışdır!");
-            }
+        if(user && user.pass === pass) {
+            // Lokal yaddaş limitini qorumaq üçün şəkli lokalda saxlamırıq
+            const localSafeUser = {...user};
+            delete localSafeUser.pic; 
+            
+            currentUser = user; 
+            localStorage.setItem('azl_user', JSON.stringify(localSafeUser)); 
+            initApp();
         } else {
-            alert("Bu nömrə ilə istifadəçi tapılmadı! (Daxil edilən: " + phone + ")");
+            alert("Məlumatlar yanlışdır!");
         }
     } catch(e) {
         console.error(e);
-        // Burada xətanın əsl səbəbini görəcəyik
-        alert("Firebase Xətası: " + e.message); 
+        // Əgər yenə limit xətası verərsə, lokal yaddaşı təmizləyib girişə icazə verək
+        if(e.name === 'QuotaExceededError' || e.message.includes('quota')) {
+            localStorage.clear();
+            alert("Yaddaş dolub! Keş təmizləndi, zəhmət olmasa yenidən cəhd edin.");
+        } else {
+            alert("Giriş xətası: " + e.message);
+        }
     }
 }
 
         function logout() { localStorage.removeItem('azl_user'); location.reload(); }
 
         function saveProfile() {
-            const upd = { name: document.getElementById('edit-name').value, surname: document.getElementById('edit-surname').value, birth: document.getElementById('edit-birth').value, fullName: document.getElementById('edit-name').value + ' ' + document.getElementById('edit-surname').value, pic: document.getElementById('profile-img').src };
-            db.ref('users/' + currentUser.phone).update(upd).then(() => { currentUser = {...currentUser, ...upd}; localStorage.setItem('azl_user', JSON.stringify(currentUser)); initApp(); alert("Profil yeniləndi!"); });
-        }
+    const picData = document.getElementById('profile-img').src;
+    
+    // Əgər şəkil çox böyükdürsə (məs: 1MB-dan çox), xəbərdarlıq edək
+    if(picData.length > 1000000) { 
+        return alert("Şəkil ölçüsü çox böyükdür! Zəhmət olmasa daha kiçik şəkil seçin.");
+    }
+
+    const upd = { 
+        name: document.getElementById('edit-name').value, 
+        surname: document.getElementById('edit-surname').value,
+        birth: document.getElementById('edit-birth').value,
+        fullName: document.getElementById('edit-name').value + ' ' + document.getElementById('edit-surname').value,
+        pic: picData
+    };
+
+    db.ref('users/' + currentUser.phone).update(upd).then(() => {
+        currentUser = {...currentUser, ...upd};
+        // Vacib: Lokal yaddaşa şəkli yazmırıq ki, quota dolmasın
+        const localSafeData = {...upd};
+        delete localSafeData.pic; 
+        localStorage.setItem('azl_user', JSON.stringify(localSafeData));
+        
+        alert("Profil yeniləndi!");
+        location.reload(); // Səhifəni yeniləyək ki, hər şey təmizlənsin
+    });
+}
 
         function previewPic(input) { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = e => document.getElementById('profile-img').src = e.target.result; reader.readAsDataURL(input.files[0]); } }
 
