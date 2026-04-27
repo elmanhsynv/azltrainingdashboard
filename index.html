@@ -334,24 +334,67 @@
         }
 
         function updateDashboard() {
-            const selectedRep = document.getElementById('rep-selector').value;
-            const allVisits = Object.values(database).flat().sort((a,b) => b.timestamp - a.timestamp);
-            const filtered = selectedRep ? database[selectedRep] || [] : allVisits;
+    const selectedRep = document.getElementById('rep-selector').value;
+    
+    // Bütün datanı çəkirik və tarixinə görə sıralayırıq
+    let allVisits = [];
+    Object.values(database).forEach(repVisits => {
+        allVisits = allVisits.concat(repVisits);
+    });
+    allVisits.sort((a, b) => b.timestamp - a.timestamp);
 
-            document.getElementById('total-visits-stat').innerText = filtered.length;
-            const avg = filtered.length ? (filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0) : 0;
-            document.getElementById('rep-avg-stat').innerText = avg;
-            document.getElementById('last-point-score').innerText = filtered.length ? Math.max(...filtered.map(v=>v.score)) : 0;
+    // Əgər nümayəndə seçilibsə, filtr edirik
+    const filtered = selectedRep ? (database[selectedRep] || []) : allVisits;
 
-            if (filtered.length > 1) {
-                const diff = filtered[0].score - (filtered[1] ? filtered[1].score : 0);
-                document.getElementById('trend-stat').innerText = (diff >= 0 ? "+" : "") + diff + "%";
-            }
+    // Statistikaları yeniləyirik
+    document.getElementById('total-visits-stat').innerText = filtered.length;
+    const avg = filtered.length ? (filtered.reduce((a, b) => a + b.score, 0) / filtered.length).toFixed(0) : 0;
+    document.getElementById('rep-avg-stat').innerText = avg;
+    
+    const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
+    document.getElementById('last-point-score').innerText = maxScore;
 
-            updateCharts(selectedRep, filtered);
-            renderHistory(filtered);
-        }
+    if (filtered.length > 1) {
+        const diff = filtered[0].score - (filtered[1] ? filtered[1].score : 0);
+        document.getElementById('trend-stat').innerText = (diff >= 0 ? "+" : "") + diff + "%";
+    } else {
+        document.getElementById('trend-stat').innerText = "0%";
+    }
 
+    // Qrafikləri və Siyahını yeniləyirik
+    updateCharts(selectedRep, filtered);
+    function renderHistory(entries) {
+    const listContainer = document.getElementById('checklist-history-list');
+    if (!listContainer) return;
+
+    if (entries.length === 0) {
+        listContainer.innerHTML = `<div class="col-span-full text-center p-10 text-slate-400 font-bold">Heç bir checklist tapılmadı.</div>`;
+        return;
+    }
+
+    listContainer.innerHTML = entries.map(e => `
+        <div class="glass-card p-6 flex justify-between items-center hover:scale-[1.02] transition-all cursor-pointer shadow-sm border border-white/20">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                    <i class="fa-solid fa-store text-xl"></i>
+                </div>
+                <div>
+                    <p class="font-black text-slate-800 dark:text-white text-lg leading-none mb-1">${e.code}</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">${e.rep} • ${e.date}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right mr-2">
+                    <div class="text-[10px] font-black text-slate-400 uppercase">SCORE</div>
+                    <div class="font-black text-xl text-blue-600">${e.score}</div>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
         function updateCharts(repName, filtered) {
             // Ranking Chart (Müqayisə)
             const ctxR = document.getElementById('rankingChart').getContext('2d');
