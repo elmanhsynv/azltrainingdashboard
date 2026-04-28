@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <script>
@@ -277,7 +276,6 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const auth = firebase.auth(); // Auth aktiv edildi
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
@@ -285,9 +283,6 @@
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
-        
-        // Dinamik hesablama üçün vəziyyət obyekti
-        let currentChecklistState = {};
 
         const trans = {
             az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
@@ -295,24 +290,6 @@
             en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Trend", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
             ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
         };
-
-        // Rəqəmlər üçün Slot Animasiyası Funksiyası
-        function animateValue(id, start, end, duration) {
-            let obj = document.getElementById(id);
-            if(!obj) return;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = Math.floor(progress * (end - start) + start);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                } else {
-                    obj.innerHTML = end;
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -346,54 +323,61 @@
         }
 
         async function handleRegister() {
-            const phone = document.getElementById('reg-phone').value.trim();
+            const phoneInput = document.getElementById('reg-phone').value.trim();
             const pass = document.getElementById('reg-pass').value;
-            const name = document.getElementById('reg-name').value;
-            const surname = document.getElementById('reg-surname').value;
-            if(!phone || !pass || !name) return alert("Məlumatları tam daxil edin.");
+            const name = document.getElementById('reg-name').value.trim();
+            const surname = document.getElementById('reg-surname').value.trim();
+            
+            if(!phoneInput || !pass || !name) return alert("Məlumatları tam daxil edin.");
+
+            const phoneKey = phoneInput.replace(/[^0-9+]/g, '');
             
             try {
-                // Təhlükəsizlik: Nömrəni saxta e-poçta çevirib əsl Auth yaradırıq
-                const pseudoEmail = `${phone}@azltraining.com`;
-                await auth.createUserWithEmailAndPassword(pseudoEmail, pass);
-                await db.ref('users/' + phone).set({ name, surname, phone, fullName: name + ' ' + surname });
+                await db.ref('users/' + phoneKey).set({ name, surname, phone: phoneInput, pass, fullName: name + ' ' + surname });
                 alert("Qeydiyyat tamamlandı!"); 
                 toggleAuth(true);
-            } catch(e) {
-                alert("Xəta baş verdi: " + e.message);
+            } catch(e) { 
+                console.error("Firebase Qeydiyyat Xətası:", e);
+                alert("Sistem xətası: " + e.message); 
             }
         }
 
         async function handleLogin() {
-            const phone = document.getElementById('login-phone').value.trim();
+            const phoneInput = document.getElementById('login-phone').value.trim();
             const pass = document.getElementById('login-pass').value;
+            
+            if(!phoneInput || !pass) return alert("Nömrə və şifrəni daxil edin.");
+
+            const phoneKey = phoneInput.replace(/[^0-9+]/g, '');
+
             try {
-                const pseudoEmail = `${phone}@azltraining.com`;
-                await auth.signInWithEmailAndPassword(pseudoEmail, pass);
-                
-                const snap = await db.ref('users').child(phone).once('value');
+                const snap = await db.ref('users/' + phoneKey).once('value');
                 const user = snap.val();
-                if(user) {
+                if(user && user.pass === pass) {
                     currentUser = user;
                     localStorage.setItem('azl_user', JSON.stringify(user));
                     initApp();
+                } else {
+                    alert("Məlumatlar yanlışdır. Şifrə və ya nömrə səhvdir.");
                 }
             } catch(e) { 
-                alert("Giriş xətası və ya şifrə yanlışdır!"); 
+                console.error("Firebase Giriş Xətası:", e);
+                alert("Bağlantı xətası: " + e.message + "\n(Böyük ehtimalla Firebase Rules bloklayıb)"); 
             }
         }
 
-        function logout() { 
-            auth.signOut();
-            localStorage.removeItem('azl_user'); 
-            location.reload(); 
-        }
+        function logout() { localStorage.removeItem('azl_user'); location.reload(); }
 
         function initApp() {
             document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('profile-name').innerText = currentUser.fullName || currentUser.name;
-            document.getElementById('profile-initials').innerText = currentUser.name[0] + (currentUser.surname ? currentUser.surname[0] : "");
-            document.getElementById('welcome-message').innerText = `XOŞ GƏLDİN, ${currentUser.name}!`;
+            
+            const safeName = currentUser?.name || "İstifadəçi";
+            const safeSurname = currentUser?.surname || "";
+            const initials = (safeName.charAt(0) + (safeSurname ? safeSurname.charAt(0) : "")).toUpperCase();
+            
+            document.getElementById('profile-name').innerText = currentUser?.fullName || (safeName + " " + safeSurname);
+            document.getElementById('profile-initials').innerText = initials || "AZ";
+            document.getElementById('welcome-message').innerText = `XOŞ GƏLDİN, ${safeName.toUpperCase()}!`;
 
             db.ref('visits').on('value', snap => {
                 const data = snap.val();
@@ -407,6 +391,23 @@
             applyTrans();
         }
 
+        function animateValue(id, start, end, duration) {
+            let obj = document.getElementById(id);
+            if (!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.innerHTML = end; 
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
         function updateDashboard() {
             const selectedRep = document.getElementById('rep-selector').value;
             let allVisits = [];
@@ -414,14 +415,11 @@
             allVisits.sort((a,b) => b.timestamp - a.timestamp);
             const filtered = selectedRep ? (database[selectedRep] || []) : allVisits;
 
-            // Slot Animations
-            const totalVisits = filtered.length;
-            const avg = totalVisits ? (filtered.reduce((a,b) => a + b.score, 0) / totalVisits).toFixed(0) : 0;
-            const maxScore = totalVisits ? Math.max(...filtered.map(v => v.score)) : 0;
-
-            animateValue('total-visits-stat', 0, totalVisits, 1000);
-            animateValue('rep-avg-stat', 0, parseInt(avg), 1000);
-            animateValue('last-point-score', 0, parseInt(maxScore), 1000);
+            animateValue('total-visits-stat', 0, filtered.length, 1000);
+            const avg = filtered.length ? Math.round(filtered.reduce((a,b) => a + b.score, 0) / filtered.length) : 0;
+            animateValue('rep-avg-stat', 0, avg, 1000);
+            const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
+            animateValue('last-point-score', 0, maxScore, 1000);
 
             updateCharts(selectedRep, filtered);
             renderHistory(filtered);
@@ -469,12 +467,11 @@
             if(btn) btn.classList.add('nav-active');
             toggleSidebar(); 
             
-            // Xəritənin gecikmə və render fix-i
             if(id === 'ziyaretler') {
                 setTimeout(() => {
                     initMap();
                     if(map) map.invalidateSize();
-                }, 200);
+                }, 400);
             }
         }
 
@@ -484,7 +481,7 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
             Object.values(database).flat().forEach(e => {
                 if(e.coords && e.coords.lat) {
-                    L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code}`);
+                    L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code} - ${e.score} Bal`);
                 }
             });
         }
@@ -556,32 +553,21 @@
             link.click();
         }
 
-        function openNewChecklist() { 
-            currentChecklistState = {}; // Reset state
-            showSection('new-checklist-form'); 
-            renderForm(); 
-        }
+        function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
 
-        // Hesablama üçün data atriburlarının əlavə edilməsi
-        function handleCheck(btn, type, catIdx, qIdx) {
+        function handleCheck(btn, type) {
             const parent = btn.parentElement;
             parent.querySelectorAll('button').forEach(b => b.classList.remove('active-y', 'active-x'));
             btn.classList.add(type === 'y' ? 'active-y' : 'active-x');
-            
-            if(!currentChecklistState[catIdx]) currentChecklistState[catIdx] = {};
-            currentChecklistState[catIdx][qIdx] = (type === 'y') ? 100 : 0;
         }
 
-        function setNoteValue(textareaId, value, status, catIdx) {
+        function setNoteValue(textareaId, value, status) {
             const txt = document.getElementById(textareaId);
             txt.value = value;
             const parent = txt.parentElement;
             parent.querySelectorAll('.note-btn').forEach(b => b.classList.remove('active-y', 'active-x'));
             if(status === 'y') parent.querySelector('.btn-good').classList.add('active-y');
             else parent.querySelector('.btn-bad').classList.add('active-x');
-
-            if(!currentChecklistState[catIdx]) currentChecklistState[catIdx] = {};
-            currentChecklistState[catIdx]['note'] = (status === 'y') ? 100 : 0;
         }
 
         function renderForm() {
@@ -599,16 +585,16 @@
             ];
             
             let h = "";
-            schema.forEach((group, cIdx) => {
-                h += `<div class="glass-card p-6 md:p-8"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
+            schema.forEach((group, index) => {
+                h += `<div class="glass-card p-6 md:p-8" data-group-index="${index}"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
                 if(group.q) {
-                    group.q.forEach((q, qIdx) => {
+                    group.q.forEach(q => {
                         h += `
                         <div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5">
                             <p class="font-bold text-xs pr-4">${q}</p>
                             <div class="flex gap-2 shrink-0">
-                                <button onclick="handleCheck(this, 'y', ${cIdx}, ${qIdx})" class="check-btn"><i class="fa-solid fa-check"></i></button>
-                                <button onclick="handleCheck(this, 'x', ${cIdx}, ${qIdx})" class="check-btn"><i class="fa-solid fa-times"></i></button>
+                                <button onclick="handleCheck(this, 'y')" class="check-btn"><i class="fa-solid fa-check"></i></button>
+                                <button onclick="handleCheck(this, 'x')" class="check-btn"><i class="fa-solid fa-times"></i></button>
                             </div>
                         </div>`;
                     });
@@ -617,8 +603,8 @@
                     h += `
                     <div class="space-y-4">
                         <div class="flex gap-2">
-                            <button onclick="setNoteValue('${group.id}', '${group.goodLabel}', 'y', ${cIdx})" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.goodLabel}</button>
-                            <button onclick="setNoteValue('${group.id}', '${group.badLabel}', 'x', ${cIdx})" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.badLabel}</button>
+                            <button onclick="setNoteValue('${group.id}', '${group.goodLabel}', 'y')" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.goodLabel}</button>
+                            <button onclick="setNoteValue('${group.id}', '${group.badLabel}', 'x')" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.badLabel}</button>
                         </div>
                         <textarea id="${group.id}" placeholder="Əlavə qeyd (vacib deyil)..." class="w-full p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 outline-none text-xs font-bold transition-all min-h-[80px]"></textarea>
                     </div>`;
@@ -628,53 +614,57 @@
             document.getElementById('dynamic-questions').innerHTML = h;
         }
 
-        // Dinamik hesablamanın həyata keçirilməsi
         function processAndSave() {
-            const code = document.getElementById('point-code-input').value;
-            if(!code) return alert("Satış nöqtəsinin kodunu daxil edin!");
+            const code = document.getElementById('point-code-input').value.trim();
+            if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
 
-            let totalPoints = 0;
-            let questionCount = 0;
-            let categoryAverages = [0, 0, 0, 0, 0]; // Radar üçün ilk 5 kateqoriya
-            
-            // Xalların toplanması
-            for (let cIdx = 0; cIdx < 10; cIdx++) {
-                let catTotal = 0;
-                let catCount = 0;
-                
-                if (currentChecklistState[cIdx]) {
-                    Object.values(currentChecklistState[cIdx]).forEach(score => {
-                        catTotal += score;
-                        catCount++;
-                        totalPoints += score;
-                        questionCount++;
-                    });
-                }
-                
-                // İlk 5 kateqoriyanı Radar Chart üçün yığırıq
-                if (cIdx < 5) {
-                    categoryAverages[cIdx] = catCount > 0 ? (catTotal / catCount) : 0;
-                }
-            }
-
-            const finalScore = questionCount > 0 ? Math.round(totalPoints / questionCount) : 0;
             const rep = currentUser.fullName || currentUser.name || "Anonim";
             
+            let totalQuestions = 0;
+            let totalCorrect = 0;
+            let catScores = [0, 0, 0, 0, 0]; 
+            let catCounts = [0, 0, 0, 0, 0];
+
+            const groups = document.querySelectorAll('#dynamic-questions > .glass-card');
+            groups.forEach((group, index) => {
+                const yBtns = group.querySelectorAll('.active-y').length;
+                const xBtns = group.querySelectorAll('.active-x').length;
+                const groupTotal = yBtns + xBtns;
+
+                if (groupTotal > 0) {
+                    totalQuestions += groupTotal;
+                    totalCorrect += yBtns;
+
+                    if (index < 5) {
+                        catScores[index] += yBtns;
+                        catCounts[index] += groupTotal;
+                    }
+                }
+            });
+
+            if (totalQuestions === 0) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
+
+            const finalScore = Math.round((totalCorrect / totalQuestions) * 100);
+            const catData = catScores.map((score, i) => catCounts[i] > 0 ? Math.round((score / catCounts[i]) * 100) : 0);
+
             const visit = { 
                 rep, 
                 code, 
                 score: finalScore, 
                 date: new Date().toLocaleDateString('az-AZ'), 
                 timestamp: Date.now(), 
-                catData: categoryAverages, 
+                catData: catData, 
                 coords: currentCoords 
             };
-            
+
             db.ref('visits').push(visit).then(() => {
-                alert(`Məlumatlar yadda saxlanıldı! Yekun Bal: ${finalScore}`);
+                alert(`Məlumatlar yadda saxlanıldı! Yekun Nəticə: ${finalScore} Bal`);
                 showSection('dashboard');
-                document.getElementById('point-code-input').value = ""; // Formu təmizləyirik
-            });
+                
+                document.getElementById('point-code-input').value = '';
+                document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
+                document.querySelectorAll('textarea').forEach(el => el.value = '');
+            }).catch(e => alert("Xəta baş verdi: " + e));
         }
 
         function getLocation() {
@@ -683,7 +673,7 @@
                     currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     document.getElementById('geo-btn').innerText = "📍 MƏKAN OK";
                     document.getElementById('geo-btn').classList.add('bg-green-600');
-                }, () => alert("Məkan icazəsi alınmadı. Cihazın məkan ayarlarını yoxlayın."));
+                }, () => alert("Məkan icazəsi alınmadı."));
             }
         }
 
@@ -693,10 +683,8 @@
                 document.documentElement.classList.add('dark');
                 if(document.getElementById('theme-toggle')) document.getElementById('theme-toggle').checked = true;
             }
-            // Auth vəziyyətini yoxlayırıq
-            auth.onAuthStateChanged(user => {
-                if(user && currentUser) {
-                    initApp(); 
-                } else if (!user) {
-                    localStorage.removeItem('azl_user');
-                    document.
+            if(currentUser) initApp(); 
+        };
+    </script>
+</body>
+</html>
