@@ -31,11 +31,8 @@
         #auth-screen { position: fixed; inset: 0; z-index: 1000; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
         .section-content { display: none; width: 100%; }
         .section-content.active { display: block; }
-        .check-btn-v4 { width: 50px; height: 45px; border-radius: 12px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; }
-        .btn-success-active { background: #10b981 !important; color: white !important; }
-        .btn-danger-active { background: #ef4444 !important; color: white !important; }
-
-        #map { height: 500px !important; width: 100%; border-radius: 2rem; z-index: 1; }
+        
+        #map { height: 400px !important; width: 100%; border-radius: 2rem; z-index: 1; }
         
         .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -43,12 +40,21 @@
         .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Mobil Menu Styles */
+        #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(4px); }
+        aside { transition: transform 0.3s ease-in-out; }
+        @media (max-width: 768px) {
+            aside { position: fixed; transform: translateX(-100%); z-index: 50; height: 100vh; }
+            aside.open { transform: translateX(0); }
+            #mobile-overlay.open { display: block; }
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden flex-col md:flex-row">
 
     <div id="auth-screen">
-        <div class="auth-card glass-card shadow-2xl p-10 w-full max-w-[420px]">
+        <div class="auth-card glass-card shadow-2xl p-10 w-full max-w-[420px] mx-4">
             <div class="text-center mb-8">
                 <div class="inline-flex p-4 bg-blue-50 rounded-3xl mb-4"><i class="fa-solid fa-shield-halved text-4xl text-blue-600"></i></div>
                 <h2 class="text-3xl font-black text-slate-800">AZL <span class="text-blue-600">Training</span></h2>
@@ -72,93 +78,106 @@
         </div>
     </div>
 
+    <div id="mobile-overlay" onclick="toggleSidebar()"></div>
+
     <div id="main-app" class="main-container h-full w-full flex flex-col md:flex-row">
-        <aside class="w-full md:w-72 bg-white dark:bg-[#020617] border-r border-slate-200 dark:border-white/5 h-auto md:h-full flex flex-col p-8 z-50">
-            <div class="mb-12 flex items-center gap-1 cursor-pointer"><span class="font-black text-2xl text-blue-600">AZL</span><span class="font-medium text-2xl dark:text-white ml-1">Training</span></div>
-            <nav class="flex md:flex-col w-full gap-1 flex-1">
+        <aside id="sidebar" class="w-72 bg-white dark:bg-[#020617] border-r border-slate-200 dark:border-white/5 h-full flex flex-col p-8 shrink-0">
+            <div class="mb-12 flex items-center justify-between">
+                <div class="flex items-center gap-1 cursor-pointer">
+                    <span class="font-black text-2xl text-blue-600">AZL</span>
+                    <span class="font-medium text-2xl dark:text-white ml-1">Training</span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="flex flex-col w-full gap-1 flex-1">
                 <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_home">Dashboard</span></button>
                 <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-list-check"></i> <span data-i18n="nav_checklist">Checklist</span></button>
                 <button onclick="showSection('ziyaretler')" id="nav-visits" class="nav-btn"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_visits">Ziyarətlər</span></button>
                 <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
             </nav>
             <div class="mt-auto pt-6 border-t border-slate-100">
-                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3"><i class="fas fa-plus-circle text-lg"></i> Yeni Checklist</button>
+                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"><i class="fas fa-plus-circle text-lg"></i> Yeni Checklist</button>
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-10 relative">
-            <header class="flex justify-between items-center mb-10">
-                <div>
-                    <h1 id="page-title" data-i18n="dash_title" class="text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter">TRAINING DASHBOARD</h1>
-                    <p id="current-date" class="text-[11px] font-black text-slate-400 mt-1"></p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <select id="rep-selector" onchange="updateDashboard()" class="glass-card px-6 py-3 font-black text-xs min-w-[220px]">
-                        <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
-                        <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
-                        <option value="Anar Babayev">Anar Babayev</option>
-                        <option value="Emil Hüseynov">Emil Hüseynov</option>
-                        <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
-                        <option value="Loğman Əliyev">Loğman Əliyev</option>
-                    </select>
-                </div>
-            </header>
-
-            <div id="dashboard" class="section-content active space-y-8">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="stat-card glass-card p-8 bg-gradient-to-br from-blue-600 to-blue-500 text-white">
-                        <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_avg">Ortalama Bal</p>
-                        <h3 id="rep-avg-stat" class="text-4xl font-black">0</h3><i class="fa-solid fa-star"></i>
-                    </div>
-                    <div class="stat-card glass-card p-8 bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
-                        <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_last">Ən Yüksək Bal</p>
-                        <h3 id="last-point-score" class="text-4xl font-black">0</h3><i class="fa-solid fa-ranking-star"></i>
-                    </div>
-                    <div class="stat-card glass-card p-8 bg-gradient-to-br from-amber-500 to-orange-400 text-white">
-                        <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_count">Ziyarət Sayı</p>
-                        <h3 id="total-visits-stat" class="text-4xl font-black">0</h3><i class="fa-solid fa-person-walking-luggage"></i>
-                    </div>
-                    <div class="stat-card glass-card p-8 bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-                        <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_trend">İnkişaf Trendi</p>
-                        <h3 id="trend-stat" class="text-4xl font-black">0%</h3><i class="fa-solid fa-chart-line"></i>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 glass-card p-8 min-h-[450px]"><canvas id="rankingChart"></canvas></div>
-                    <div class="glass-card p-8"><canvas id="radarChart"></canvas></div>
-                </div>
+        <main class="flex-1 overflow-y-auto relative">
+            <div class="md:hidden flex items-center p-6 bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-white/5 sticky top-0 z-30">
+                <button onclick="toggleSidebar()" class="text-blue-600 text-2xl mr-4"><i class="fa-solid fa-bars"></i></button>
+                <span class="font-black text-xl text-blue-600">AZL <span class="text-slate-800 dark:text-white font-medium">Training</span></span>
             </div>
 
-            <div id="checklist" class="section-content">
-                <div id="checklist-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto"></div>
-            </div>
+            <div class="p-6 md:p-10 max-w-7xl mx-auto">
+                <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
+                    <div>
+                        <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter">PERFORMANS ANALİZİ</h1>
+                        <p id="current-date" class="text-[11px] font-black text-slate-400 mt-1"></p>
+                    </div>
+                    <div class="w-full lg:w-auto">
+                        <select id="rep-selector" onchange="updateDashboard()" class="glass-card w-full px-6 py-3 font-black text-xs min-w-[220px] outline-none">
+                            <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
+                            <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                            <option value="Anar Babayev">Anar Babayev</option>
+                            <option value="Emil Hüseynov">Emil Hüseynov</option>
+                            <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                            <option value="Loğman Əliyev">Loğman Əliyev</option>
+                        </select>
+                    </div>
+                </header>
 
-            <div id="new-checklist-form" class="section-content">
-                <div class="max-w-4xl mx-auto space-y-8 pb-32">
-                    <div class="glass-card p-8 shadow-sm">
-                        <label class="block text-xs font-black text-blue-600 uppercase mb-4" data-i18n="input_code">Satış Nöqtəsi Kodu:</label>
-                        <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 p-6 rounded-2xl font-black text-2xl outline-none">
-                    </div>
-                    <div id="dynamic-questions" class="space-y-8"></div>
-                    <div class="glass-card p-10 flex gap-6 shadow-2xl">
-                        <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-6 rounded-3xl" data-i18n="btn_checkin">Check-in et</button>
-                        <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-6 rounded-3xl uppercase" data-i18n="btn_save">Saxla və Bitir</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div id="ayarlar" class="section-content">
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <div class="glass-card p-8 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black" id="profile-initials">AZ</div>
-                            <div>
-                                <h3 class="text-xl font-black dark:text-white" id="profile-name">İstifadəçi Adı</h3>
-                                <p class="text-xs text-slate-400 uppercase font-bold" data-i18n="nav_settings">Ayarlar</p>
-                            </div>
+                <div id="dashboard" class="section-content active space-y-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-blue-600 to-blue-500 text-white">
+                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_avg">Ortalama Bal</p>
+                            <h3 id="rep-avg-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-star"></i>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center gap-3">
+                        <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
+                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_last">Ən Yüksək Bal</p>
+                            <h3 id="last-point-score" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-ranking-star"></i>
+                        </div>
+                        <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-amber-500 to-orange-400 text-white">
+                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_count">Ziyarət Sayı</p>
+                            <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-person-walking-luggage"></i>
+                        </div>
+                        <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-rose-500 to-pink-500 text-white">
+                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_trend">İnkişaf Trendi</p>
+                            <h3 id="trend-stat" class="text-3xl md:text-4xl font-black">0%</h3><i class="fa-solid fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2 glass-card p-4 md:p-8 h-[350px] md:h-[450px]"><canvas id="rankingChart"></canvas></div>
+                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex items-center justify-center"><canvas id="radarChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div id="checklist" class="section-content">
+                    <div id="checklist-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto"></div>
+                </div>
+
+                <div id="new-checklist-form" class="section-content">
+                    <div class="max-w-4xl mx-auto space-y-6 pb-32">
+                        <div class="glass-card p-6 md:p-8 shadow-sm">
+                            <label class="block text-xs font-black text-blue-600 uppercase mb-4" data-i18n="input_code">Satış Nöqtəsi Kodu:</label>
+                            <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-6 rounded-2xl font-black text-xl md:text-2xl outline-none border border-transparent focus:border-blue-500 transition-all">
+                        </div>
+                        <div id="dynamic-questions" class="space-y-6 md:space-y-8"></div>
+                        <div class="glass-card p-6 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-6 shadow-2xl">
+                            <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 md:p-6 rounded-3xl" data-i18n="btn_checkin">Check-in et</button>
+                            <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 md:p-6 rounded-3xl uppercase" data-i18n="btn_save">Saxla və Bitir</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="ayarlar" class="section-content">
+                    <div class="max-w-4xl mx-auto space-y-6">
+                        <div class="glass-card p-6 md:p-8 flex items-center justify-between flex-wrap gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 md:w-16 md:h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-black" id="profile-initials">AZ</div>
+                                <div>
+                                    <h3 class="text-lg md:text-xl font-black dark:text-white" id="profile-name">İstifadəçi Adı</h3>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold" data-i18n="nav_settings">Ayarlar</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 ml-auto">
                                 <i class="fa-solid fa-moon text-slate-400"></i>
                                 <label class="switch">
                                     <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
@@ -166,65 +185,61 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="glass-card p-8">
-                            <h4 class="font-black text-blue-600 mb-6 uppercase text-xs" data-i18n="lang_selection">Dil Seçimləri</h4>
-                            <div class="grid grid-cols-2 gap-3">
-                                <button onclick="changeLanguage('az')" class="p-4 border rounded-2xl font-bold text-sm hover:bg-blue-50 dark:hover:bg-slate-800">Azərbaycan 🇦🇿</button>
-                                <button onclick="changeLanguage('tr')" class="p-4 border rounded-2xl font-bold text-sm hover:bg-blue-50 dark:hover:bg-slate-800">Türkçe 🇹🇷</button>
-                                <button onclick="changeLanguage('en')" class="p-4 border rounded-2xl font-bold text-sm hover:bg-blue-50 dark:hover:bg-slate-800">English 🇺🇸</button>
-                                <button onclick="changeLanguage('ru')" class="p-4 border rounded-2xl font-bold text-sm hover:bg-blue-50 dark:hover:bg-slate-800">Русский 🇷🇺</button>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="glass-card p-6 md:p-8">
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]" data-i18n="lang_selection">Dil Seçimləri</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="changeLanguage('az')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Azərbaycan 🇦🇿</button>
+                                    <button onclick="changeLanguage('tr')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Türkçe 🇹🇷</button>
+                                    <button onclick="changeLanguage('en')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">English 🇺🇸</button>
+                                    <button onclick="changeLanguage('ru')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Русский 🇷🇺</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-6 md:p-8">
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]" data-i18n="rep_selection">Hesabat Çıxarma</h4>
+                                <select id="report-rep-selector" class="w-full p-4 rounded-xl border font-bold text-xs mb-4 outline-none dark:bg-slate-800 dark:border-white/10">
+                                    <option value="">Nümayəndə seçin</option>
+                                    <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                                    <option value="Anar Babayev">Anar Babayev</option>
+                                    <option value="Emil Hüseynov">Emil Hüseynov</option>
+                                    <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                                    <option value="Loğman Əliyev">Loğman Əliyev</option>
+                                </select>
+                                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700">Hesabatı Çək</button>
                             </div>
                         </div>
 
-                        <div class="glass-card p-8">
-                            <h4 class="font-black text-blue-600 mb-6 uppercase text-xs" data-i18n="rep_selection">Satış nümayəndəsi hesabatı</h4>
-                            <select id="report-rep-selector" class="w-full p-4 rounded-2xl border font-bold text-sm mb-4 outline-none dark:bg-slate-800">
-                                <option value="">Nümayəndə seçin</option>
-                                <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
-                                <option value="Anar Babayev">Anar Babayev</option>
-                                <option value="Emil Hüseynov">Emil Hüseynov</option>
-                                <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
-                                <option value="Loğman Əliyev">Loğman Əliyev</option>
-                            </select>
-                            <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-blue-700">Hesabatı Çək</button>
+                        <div class="glass-card overflow-hidden">
+                            <button onclick="toggleAccordion('reports-content')" class="w-full p-6 md:p-8 flex justify-between items-center bg-white/50 dark:bg-white/5">
+                                <span class="font-black text-blue-600 uppercase text-xs" data-i18n="internal_report">Hesabatlar</span>
+                                <i class="fa-solid fa-chevron-down text-blue-600"></i>
+                            </button>
+                            <div id="reports-content" class="hidden p-6 md:p-8 space-y-6 border-t border-slate-100 dark:border-white/5">
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <button onclick="setReportType('daily')" id="btn-daily" class="flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600">Gündəlik hesabat</button>
+                                    <button onclick="setReportType('weekly')" id="btn-weekly" class="flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400">Həftəlik hesabat</button>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Tarix seçin</label>
+                                    <input type="date" id="report-date" class="w-full p-4 rounded-xl border font-bold text-xs outline-none dark:bg-slate-800 dark:border-white/10" onchange="generateInternalReport()">
+                                    <p id="weekly-info" class="hidden text-[10px] text-amber-600 font-bold ml-2 italic">* Həftəlik hesabat üçün Bazar ertəsini seçin.</p>
+                                </div>
+                                <div id="internal-report-results"></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="glass-card overflow-hidden">
-                        <button onclick="toggleAccordion('reports-content')" class="w-full p-8 flex justify-between items-center bg-white/50 dark:bg-white/5">
-                            <span class="font-black text-blue-600 uppercase text-sm" data-i18n="internal_report">Hesabatlar</span>
-                            <i class="fa-solid fa-chevron-down text-blue-600"></i>
+                        <button onclick="logout()" class="w-full bg-rose-500 text-white p-6 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-3">
+                            <i class="fas fa-sign-out-alt"></i> Hesabdan çıxış
                         </button>
-                        <div id="reports-content" class="hidden p-8 space-y-6 border-t border-slate-100 dark:border-white/5">
-                            <div class="flex gap-4">
-                                <button onclick="setReportType('daily')" id="btn-daily" class="flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-sm text-blue-600">Gündəlik hesabat</button>
-                                <button onclick="setReportType('weekly')" id="btn-weekly" class="flex-1 p-4 border-2 rounded-2xl font-black text-sm text-slate-400">Həftəlik hesabat</button>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <label id="date-label" class="text-[10px] font-black text-slate-400 uppercase ml-2">Tarix seçin</label>
-                                <input type="date" id="report-date" class="w-full p-4 rounded-2xl border font-bold text-sm outline-none dark:bg-slate-800" onchange="generateInternalReport()">
-                                <p id="weekly-info" class="hidden text-[10px] text-amber-600 font-bold ml-2 italic">* Həftəlik hesabat üçün yalnız Bazar ertəsini seçin.</p>
-                            </div>
-
-                            <div id="internal-report-results" class="space-y-4">
-                                <div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl text-center text-slate-400 font-bold">Məlumat seçilməyib</div>
-                            </div>
-                        </div>
                     </div>
-
-                    <button onclick="logout()" class="w-full bg-rose-500 text-white p-6 rounded-[2rem] font-black uppercase text-xs tracking-widest hover:bg-rose-600 flex items-center justify-center gap-3">
-                        <i class="fas fa-sign-out-alt"></i> Hesabdan çıxış
-                    </button>
                 </div>
-            </div>
 
-            <div id="ziyaretler" class="section-content">
-                <div class="glass-card p-6 shadow-2xl">
-                    <div id="map"></div>
+                <div id="ziyaretler" class="section-content">
+                    <div class="glass-card p-4 md:p-6 shadow-2xl">
+                        <div id="map"></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -251,11 +266,18 @@
         let reportType = 'daily';
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", form_title: "Məlumat Girişi", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
-            tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğilim", btn_quick_create: "Yeni Liste", dash_title: "PERFORMANS ANALİZİ", form_title: "Veri Girişi", input_code: "Satış Noktası Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
-            en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Average Score", stat_last: "Max Score", stat_count: "Visits Count", stat_trend: "Trend", btn_quick_create: "New Checklist", dash_title: "PERFORMANCE ANALYSIS", form_title: "Data Entry", input_code: "Sales Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Options", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Representatives" },
-            ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", dash_title: "АНАЛИЗ", form_title: "Ввод данных", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все представители" }
+            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
+            tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğilim", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
+            en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Trend", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
+            ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
         };
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('mobile-overlay');
+            sb.classList.toggle('open');
+            ov.classList.toggle('open');
+        }
 
         function toggleAccordion(id) {
             const content = document.getElementById(id);
@@ -265,13 +287,8 @@
         function applyTrans() {
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (trans[currentLang][key]) {
-                    if (el.tagName === 'INPUT') el.placeholder = trans[currentLang][key];
-                    else el.innerText = trans[currentLang][key];
-                }
+                if (trans[currentLang][key]) el.innerText = trans[currentLang][key];
             });
-            const repSelect = document.getElementById('rep-selector');
-            if(repSelect) repSelect.options[0].text = trans[currentLang].all_reps;
         }
 
         function changeLanguage(lang) {
@@ -289,7 +306,7 @@
         }
 
         async function handleRegister() {
-            const phone = document.getElementById('reg-phone').value.trim().replace(/\s+/g, '');
+            const phone = document.getElementById('reg-phone').value.trim();
             const pass = document.getElementById('reg-pass').value;
             const name = document.getElementById('reg-name').value;
             const surname = document.getElementById('reg-surname').value;
@@ -299,7 +316,7 @@
         }
 
         async function handleLogin() {
-            const phone = document.getElementById('login-phone').value.trim().replace(/\s+/g, '');
+            const phone = document.getElementById('login-phone').value.trim();
             const pass = document.getElementById('login-pass').value;
             try {
                 const snap = await db.ref('users').child(phone).once('value');
@@ -354,7 +371,7 @@
             if(rankingChart) rankingChart.destroy();
             rankingChart = new Chart(ctxR, {
                 type: 'bar',
-                data: { labels, datasets: [{ label: 'Ortalama', data: scores, backgroundColor: '#3b82f6', borderRadius: 10 }] },
+                data: { labels, datasets: [{ label: 'Ortalama', data: scores, backgroundColor: '#3b82f6', borderRadius: 8 }] },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
@@ -364,19 +381,19 @@
             radarChart = new Chart(ctxRadar, {
                 type: 'radar',
                 data: { labels:['4+4','B.Beş','S.Keno','Poz-Q','Term'], datasets:[{ data:radarData, backgroundColor:'rgba(59,130,246,0.2)', borderColor:'#3b82f6' }] },
-                options: { scales: { r: { min: 0, max: 100 } } }
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100 } } }
             });
         }
 
         function renderHistory(entries) {
             const list = document.getElementById('checklist-history-list');
             list.innerHTML = entries.map(e => `
-                <div class="glass-card p-6 flex justify-between items-center shadow-sm">
+                <div class="glass-card p-5 flex justify-between items-center shadow-sm">
                     <div>
-                        <p class="font-black text-blue-600 text-xl">${e.code}</p>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase">${e.rep} • ${e.date}</p>
+                        <p class="font-black text-blue-600 text-lg">${e.code}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">${e.rep} • ${e.date}</p>
                     </div>
-                    <div class="bg-blue-600 text-white w-12 h-12 flex items-center justify-center rounded-2xl font-black">${e.score}</div>
+                    <div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm">${e.score}</div>
                 </div>
             `).join('');
         }
@@ -387,8 +404,8 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
+            if(window.innerWidth < 768) toggleSidebar();
             if(id === 'ziyaretler') setTimeout(initMap, 400);
-            applyTrans();
         }
 
         function initMap() {
@@ -411,26 +428,21 @@
 
         function setReportType(type) {
             reportType = type;
-            document.getElementById('btn-daily').className = type === 'daily' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-sm text-blue-600' : 'flex-1 p-4 border-2 rounded-2xl font-black text-sm text-slate-400';
-            document.getElementById('btn-weekly').className = type === 'weekly' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-sm text-blue-600' : 'flex-1 p-4 border-2 rounded-2xl font-black text-sm text-slate-400';
+            document.getElementById('btn-daily').className = type === 'daily' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600' : 'flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400';
+            document.getElementById('btn-weekly').className = type === 'weekly' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600' : 'flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400';
             document.getElementById('weekly-info').classList.toggle('hidden', type !== 'weekly');
-            generateInternalReport();
         }
 
         function generateInternalReport() {
             const dateVal = document.getElementById('report-date').value;
             if(!dateVal) return;
             const selectedDate = new Date(dateVal);
-            
-            // Həftəlik hesabat üçün yoxlama: yalnız bazar ertəsi (Day 1)
             if(reportType === 'weekly' && selectedDate.getDay() !== 1) {
-                document.getElementById('internal-report-results').innerHTML = `<div class="p-6 bg-rose-50 dark:bg-rose-900/20 rounded-3xl text-center text-rose-600 font-bold">Zəhmət olmasa Bazar ertəsini seçin</div>`;
+                document.getElementById('internal-report-results').innerHTML = `<div class="p-6 bg-rose-50 rounded-3xl text-center text-rose-600 font-bold text-xs">Bazar ertəsini seçin</div>`;
                 return;
             }
-
             let filtered = [];
             const allVisits = Object.values(database).flat();
-
             if(reportType === 'daily') {
                 const targetStr = selectedDate.toLocaleDateString('az-AZ');
                 filtered = allVisits.filter(v => v.date === targetStr);
@@ -443,23 +455,21 @@
                     return vDate >= startOfWeek && vDate <= endOfWeek;
                 });
             }
-
             const resultsDiv = document.getElementById('internal-report-results');
             if(filtered.length === 0) {
-                resultsDiv.innerHTML = `<div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl text-center text-slate-400 font-bold">Məlumat tapılmadı</div>`;
+                resultsDiv.innerHTML = `<div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl text-center text-slate-400 font-bold text-xs">Məlumat tapılmadı</div>`;
             } else {
                 resultsDiv.innerHTML = `
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl text-center">
-                            <p class="text-[10px] font-black text-blue-600 uppercase">Ziyarət</p>
-                            <h5 class="text-2xl font-black text-blue-600">${filtered.length}</h5>
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-center">
+                            <p class="text-[8px] font-black text-blue-600 uppercase">Ziyarət</p>
+                            <h5 class="text-xl font-black text-blue-600">${filtered.length}</h5>
                         </div>
-                        <div class="p-6 bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl text-center">
-                            <p class="text-[10px] font-black text-emerald-600 uppercase">Ortalama</p>
-                            <h5 class="text-2xl font-black text-emerald-600">${(filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0)}</h5>
+                        <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-center">
+                            <p class="text-[8px] font-black text-emerald-600 uppercase">Ortalama</p>
+                            <h5 class="text-xl font-black text-emerald-600">${(filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0)}</h5>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
         }
 
@@ -472,19 +482,19 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Report_${rep.replace(" ","_")}.csv`);
+            link.setAttribute("download", `Report_${rep}.csv`);
             document.body.appendChild(link);
             link.click();
         }
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
         function renderForm() {
-            const schema = [{ cat: "4+4 Oyunu", questions: ["Oyun qaydalarını bilir?", "Cekpotu tanıyır?"] }, { cat: "Terminal", questions: ["Hesabat çıxara bilir?", "Ləğv edə bilir?"] }];
+            const schema = [{ cat: "4+4 Oyunu", q: ["Qaydaları bilir?", "Cekpotu tanıyır?"] }, { cat: "Terminal", q: ["Hesabat çıxarır?", "Ləğv edir?"] }];
             let h = "";
-            schema.forEach((group, gIdx) => {
-                h += `<div class="glass-card p-8"><h3 class="font-black text-blue-600 mb-4">${group.cat}</h3>`;
-                group.questions.forEach((q, qIdx) => {
-                    h += `<div class="flex justify-between items-center py-4 border-b"><p class="font-bold">${q}</p><div class="flex gap-2"><button onclick="this.className='w-10 h-10 rounded bg-green-500 text-white'" class="w-10 h-10 border rounded">Y</button><button onclick="this.className='w-10 h-10 rounded bg-red-500 text-white'" class="w-10 h-10 border rounded">X</button></div></div>`;
+            schema.forEach(group => {
+                h += `<div class="glass-card p-6 md:p-8"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
+                group.q.forEach(q => {
+                    h += `<div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5"><p class="font-bold text-xs pr-4">${q}</p><div class="flex gap-2 shrink-0"><button onclick="this.className='w-10 h-10 rounded-lg bg-green-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">Y</button><button onclick="this.className='w-10 h-10 rounded-lg bg-red-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">X</button></div></div>`;
                 });
                 h += `</div>`;
             });
@@ -493,9 +503,12 @@
 
         function processAndSave() {
             const code = document.getElementById('point-code-input').value;
-            const rep = currentUser.fullName || "Anonim";
+            const rep = currentUser.fullName || currentUser.name || "Anonim";
             const visit = { rep, code, score: 85, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), catData: [80, 75, 90, 85, 70], coords: currentCoords };
-            db.ref('visits').push(visit).then(() => showSection('dashboard'));
+            db.ref('visits').push(visit).then(() => {
+                alert("Məlumatlar yadda saxlanıldı!");
+                showSection('dashboard');
+            });
         }
 
         function getLocation() {
@@ -504,7 +517,7 @@
                     currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     document.getElementById('geo-btn').innerText = "📍 MƏKAN OK";
                     document.getElementById('geo-btn').classList.add('bg-green-600');
-                });
+                }, () => alert("Məkan icazəsi alınmadı."));
             }
         }
 
