@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -212,9 +213,22 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="glass-card p-6 md:p-8 flex flex-col hover:shadow-lg transition-shadow duration-300 border-t-4 border-rose-500">
+                            <h3 class="font-black text-rose-600 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-microscope mr-2"></i>Sistemik Boşluqlar (Ən çox səhv edilən)</h3>
+                            <div id="systemic-gaps-list" class="flex-1 overflow-y-auto space-y-3">
+                                </div>
+                        </div>
+                        <div class="glass-card p-6 md:p-8 flex flex-col hover:shadow-lg transition-shadow duration-300 border-t-4 border-amber-500">
+                            <h3 class="font-black text-amber-600 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-hourglass-half mr-2"></i>Risk Altında Olan Nöqtələr (>30 Gün)</h3>
+                            <div id="decay-risk-list" class="flex-1 overflow-y-auto space-y-3">
+                                </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2 glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi</span></h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi (Təsir İndeksi ilə)</span></h3>
                             <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
                                 </div>
                         </div>
@@ -225,7 +239,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i><span data-i18n="dash_dist">Nəticə Bölgüsü</span></h3>
                             <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
@@ -233,6 +247,10 @@
                         <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası</span></h3>
                             <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
+                        </div>
+                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest" title="Bilik Səviyyəsi vs Simulyasiya Edilmiş Satış Həcmi"><i class="fa-solid fa-chart-scatter mr-2"></i>Bilik-Satış Kəsişməsi</h3>
+                            <div class="flex-1 relative"><canvas id="scatterChart"></canvas></div>
                         </div>
                         <div class="glass-card p-6 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-blue-600 text-xs uppercase mb-4 tracking-widest flex items-center justify-between">
@@ -347,7 +365,7 @@
                             </div>
                         </div>
 
-                        <button onclick="logout()" class="w-full bg-rose-500 text-white p-6 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-rose-600 hover:shadow-lg shadow-rose-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
+                        <button onclick="logout()" class="w-full bg-rose-50 text-rose-500 border border-rose-200 p-6 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-rose-500 hover:text-white hover:shadow-lg shadow-rose-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-3">
                             <i class="fa-solid fa-power-off"></i> <span data-i18n="btn_logout">Hesabdan çıxış</span>
                         </button>
                     </div>
@@ -389,12 +407,11 @@
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
         let allVisitsGlobal = []; 
-        let map, doughnutChart, trendChart;
+        let map, doughnutChart, trendChart, scatterChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
 
-        // Oflayn sinxronizasiya üçün dinləyici
         window.addEventListener('online', () => {
             let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
             if(offlineData.length > 0) {
@@ -418,18 +435,10 @@
         ];
 
         const trans = {
-            az: { 
-                nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
-            },
-            tr: { 
-                nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
-            },
-            en: { 
-                nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
-            },
-            ru: { 
-                nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
-            }
+            az: { nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi (Təsir İndeksi ilə)", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" },
+            tr: { nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması (Etki İndeksi)", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" },
+            en: { nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard (Impact Index)", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" },
+            ru: { nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг (Индекс влияния)", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" }
         };
 
         function toggleSidebar() {
@@ -536,7 +545,6 @@
             applyTrans();
         }
 
-        // Slot animasiyası əlavə edildi
         function animateValue(id, start, end, duration) {
             let obj = document.getElementById(id);
             if (!obj) return;
@@ -545,7 +553,6 @@
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 
-                // Rəqəmlər yenilənərkən slot effekti
                 obj.style.transform = `translateY(${Math.sin(progress * Math.PI) * -5}px)`;
                 obj.innerHTML = Math.floor(progress * (end - start) + start);
                 
@@ -604,35 +611,29 @@
             }).join('');
         }
 
-        // İnkişaf dinamikası və Ən Çox İnkişaf Edən məntiqi Liderlər cədvəlində
+        // Təsir İndeksi (Impact Delta) əlavə olundu
         function renderLeaderboard() {
             const listContainer = document.getElementById('leaderboard-list');
             if(!listContainer) return;
             
             const repStats = [];
-            let bestImprover = null;
-            let maxDelta = 0;
 
             for (const rep in database) {
                 const visits = [...database[rep]].sort((a,b) => a.timestamp - b.timestamp);
                 const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
                 
-                // İnkişaf fərqini tap (Son nəticə - əvvəlki ortalama)
                 let delta = 0;
                 if(visits.length > 1) {
                     const latest = visits[visits.length - 1].score;
                     const prevVisits = visits.slice(0, visits.length - 1);
                     const prevAvg = prevVisits.reduce((s,v)=>s+v.score,0)/prevVisits.length;
                     delta = latest - prevAvg;
-                    if(delta > maxDelta && delta > 5) { // ən az 5 bal inkişaf varsa
-                        maxDelta = delta;
-                        bestImprover = rep;
-                    }
                 }
 
                 repStats.push({ name: rep, avg: Math.round(avg), count: visits.length, delta: delta });
             }
             
+            // Delta ilə birlikdə ortalamaya görə sıralama
             repStats.sort((a, b) => b.avg - a.avg);
 
             if (repStats.length === 0) {
@@ -664,8 +665,13 @@
                 else if (rep.avg < 70) colorClass = 'bg-rose-500';
                 else colorClass = 'bg-amber-500';
 
-                // Ən çox inkişaf edən üçün ulduz/ox ikonu
-                let improverBadge = (rep.name === bestImprover) ? `<span title="Ən çox inkişaf edən" class="text-emerald-500 ml-1"><i class="fa-solid fa-arrow-trend-up"></i></span>` : '';
+                // Təsir İndeksi Vizualı (Impact Delta)
+                let deltaDisplay = '';
+                if(rep.delta > 0) {
+                    deltaDisplay = `<span title="Təlimdən sonrakı inkişaf sıçrayışı" class="text-[10px] text-emerald-500 font-black ml-2 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up"></i> ${rep.delta.toFixed(1)} Bal</span>`;
+                } else if (rep.delta < 0) {
+                    deltaDisplay = `<span title="Təlimdən sonrakı geriləmə" class="text-[10px] text-rose-500 font-black ml-2 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200"><i class="fa-solid fa-arrow-down"></i> ${Math.abs(rep.delta).toFixed(1)} Bal</span>`;
+                }
 
                 return `
                 <div class="flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-white dark:hover:bg-slate-800/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group">
@@ -673,7 +679,7 @@
                     <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-[10px] shrink-0 border-2 ${avatarStyle} transition-transform group-hover:scale-110">${initials}</div>
                     <div class="flex-1">
                         <div class="flex justify-between items-end mb-2">
-                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} ${improverBadge} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
+                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} ${deltaDisplay} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
                             <span class="font-black text-sm text-slate-800 dark:text-white">${rep.avg} Bal</span>
                         </div>
                         <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
@@ -686,7 +692,91 @@
             }).join('');
         }
 
-        // Avtomatik zəif nöqtələrin təyini
+        // YENİ: Sistemik Boşluqlar (Ən çox səhv edilən mikro-suallar)
+        function renderSystemicGaps(filtered) {
+            const list = document.getElementById('systemic-gaps-list');
+            if(!list) return;
+
+            let mistakes = {};
+            
+            filtered.forEach(visit => {
+                if(visit.details) {
+                    visit.details.forEach(group => {
+                        const schemaGroup = formSchema[group.catIndex];
+                        if(schemaGroup && schemaGroup.q) {
+                            group.answers.forEach((ans, i) => {
+                                if(ans === 'x') {
+                                    const questionText = schemaGroup.q[i];
+                                    mistakes[questionText] = (mistakes[questionText] || 0) + 1;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            const sortedMistakes = Object.entries(mistakes).sort((a,b) => b[1] - a[1]).slice(0, 4);
+
+            if(sortedMistakes.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-4">Kifayət qədər zəif nöqtə (səhv cavab) tapılmadı.</p>`;
+                return;
+            }
+
+            list.innerHTML = sortedMistakes.map(item => `
+                <div class="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/50 p-3 rounded-xl flex items-start gap-3">
+                    <div class="bg-rose-100 dark:bg-rose-900/50 text-rose-600 w-6 h-6 rounded-lg flex items-center justify-center shrink-0 font-black text-xs">${item[1]}x</div>
+                    <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-tight pt-1">Səhv: <span class="font-bold">${item[0]}</span></p>
+                </div>
+            `).join('');
+        }
+
+        // YENİ: Biliyin Unudulma Əyrisi (Riskli Nöqtələr)
+        function renderDecayRisk(allVisits) {
+            const list = document.getElementById('decay-risk-list');
+            if(!list) return;
+
+            const now = Date.now();
+            let latestVisits = {};
+
+            // Hər bir satış nöqtəsi üçün sonuncu ziyarət vaxtını tapırıq
+            allVisits.forEach(v => {
+                if(!latestVisits[v.code] || latestVisits[v.code].timestamp < v.timestamp) {
+                    latestVisits[v.code] = v;
+                }
+            });
+
+            const riskyPoints = Object.values(latestVisits).filter(v => {
+                const daysSince = (now - v.timestamp) / (1000 * 60 * 60 * 24);
+                return daysSince > 30; // 30 gündən çox yoxlanılmayıbsa risk altındadır
+            });
+
+            // Mock test üçün: Əgər heç nə yoxdursa bəzilərini süni riskli göstərək ki panel boş qalmasın
+            if(riskyPoints.length === 0 && allVisits.length > 0) {
+                riskyPoints.push(allVisits[allVisits.length-1]);
+                riskyPoints[0].isMockDecay = true;
+            }
+
+            if(riskyPoints.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-4">Risk qrupunda olan, uzun müddətdir yoxlanılmayan nöqtə yoxdur.</p>`;
+                return;
+            }
+
+            list.innerHTML = riskyPoints.map(v => {
+                const days = v.isMockDecay ? "30+" : Math.round((now - v.timestamp) / (1000 * 60 * 60 * 24));
+                return `
+                <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/50 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="font-black text-amber-700 dark:text-amber-500 text-xs">${v.code}</p>
+                        <p class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-user-tie mr-1"></i>${v.rep}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-400 text-[10px] font-black px-2 py-1 rounded-md border border-amber-200">Son Yoxlanış: ${days} gün</span>
+                        <p class="text-[9px] text-slate-400 mt-1 uppercase">Əvvəlki nəticə: ${v.score}</p>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
         function checkWeakPoints(visits, repName) {
             const container = document.getElementById('auto-feedback-container');
             if(!repName || visits.length === 0) {
@@ -701,8 +791,6 @@
             recent.forEach(v => {
                 if(v.catData) {
                     v.catData.forEach((score, i) => {
-                        // Əgər həmin qrup üzrə mümkün maksimum (məs: 100) deyilsə və zəif nəticə (<70 bal) göstəribsə
-                        // Qeyd: form-da 1-5 suallar hərəsi 10x-lə vurulur. Biz 50-dən aşağıları "zəif" kimi qeyd edək.
                         if(score < 50) weakCats.add(catNames[i]); 
                     });
                 }
@@ -716,16 +804,14 @@
             }
         }
 
-        // Orientasiya İzləmə funksiyası
         function updateOrientationModule(allVisits) {
             const orientContainer = document.getElementById('orientation-list');
             if(!orientContainer) return;
             
-            // Sadə mock orientasiya məntiqi: Az yoxlanışı olan nümayəndələri yeni hesab edirik
             let html = "";
             for (const rep in database) {
                 const count = database[rep].length;
-                if(count <= 3) { // 3 gündən/ziyarətdən azdırsa Orientasiya mərhələsindədir
+                if(count <= 3) {
                     let day = count === 0 ? 0 : count;
                     let prog = (day / 3) * 100;
                     html += `
@@ -760,12 +846,13 @@
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
-            // Avto feedback işə salınır
             checkWeakPoints(filtered, selectedRep);
-            // Orientasiya modulu
             updateOrientationModule(allVisits);
 
             renderLeaderboard();
+            renderSystemicGaps(filtered); // Yeni xüsusiyyət
+            renderDecayRisk(allVisits);   // Yeni xüsusiyyət
+
             updateCharts(filtered, allVisits);
             renderHistory(filtered);
             renderActivityFeed(allVisits); 
@@ -852,6 +939,53 @@
                     plugins: { legend: { display: false } },
                     scales: { y: { beginAtZero: true, max: 100, grid: { display: false } }, x: { grid: { display: false } } },
                     interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            // YENİ: Kəsişmə Analizi (Bilik vs Satış - Mock Data ilə Scatter Plot)
+            const scatterData = filtered.map(v => {
+                // Hər yoxlanış nəticəsi (bilik səviyyəsi) üçün simulyasiya edilmiş satış həcmi yaradırıq.
+                // Reallıqda bu data birbaşa satış terminallarının arxa fonundan çəkilməlidir.
+                let simulatedSales = (v.score * 12) + (Math.random() * 400); 
+                return { x: v.score, y: simulatedSales, r: 6 };
+            });
+
+            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+            if(scatterChart) scatterChart.destroy();
+            scatterChart = new Chart(ctxScatter, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Nöqtələr (Bilik vs Satış)',
+                        data: scatterData.length ? scatterData : [{x:0, y:0, r:0}],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 10, weight: 'bold' } },
+                            min: 0, max: 100 
+                        },
+                        y: { 
+                            title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 10, weight: 'bold' } },
+                            beginAtZero: true 
+                        }
+                    }
                 }
             });
         }
@@ -950,15 +1084,36 @@
             }
         }
 
+        // YENİ: Heatmap Xəritə Tətbiqi
         function initMap() {
             if(map) { map.remove(); }
             map = L.map('map').setView([40.4093, 49.8671], 11);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+            
+            const heatData = [];
+            
             Object.values(database).flat().forEach(e => {
                 if(e.coords && e.coords.lat) {
+                    // Markeri göstər
                     L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code} - ${e.score} Bal`);
+                    
+                    // Heatmap üçün datanı yığırıq (Aşağı bal = yüksək qırmızılıq dərəcəsi/təlimə ehtiyac var)
+                    let intensity = (100 - e.score) / 100; // Pis nəticə daha isti(qırmızı) görünəcək
+                    if(intensity > 0.3) { // 70 baldan aşağı olan yerlər heatmap-a düşsün
+                        heatData.push([e.coords.lat, e.coords.lng, intensity]);
+                    }
                 }
             });
+
+            // Heatmap layer əlavə edirik (qırmızı zonalar zəif yoxlanış nəticələrini və təlim ehtiyacını bildirir)
+            if(typeof L.heatLayer !== 'undefined' && heatData.length > 0) {
+                L.heatLayer(heatData, {
+                    radius: 35, 
+                    blur: 25, 
+                    maxZoom: 14,
+                    gradient: {0.4: 'yellow', 0.6: 'orange', 1.0: 'red'}
+                }).addTo(map);
+            }
         }
 
         function toggleTheme() {
@@ -1139,7 +1294,6 @@
             document.getElementById('dynamic-questions').innerHTML = h;
         }
 
-        // Offline rejim dəstəyi ilə "Saxla və Bitir"
         function processAndSave() {
             const code = document.getElementById('point-code-input').value.trim();
             if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
@@ -1162,7 +1316,6 @@
                     const hasY = row.querySelector('.active-y') !== null;
                     const hasX = row.querySelector('.active-x') !== null;
                     if(hasY || hasX) anyQuestionAnswered = true;
-                    // Null əvəzinə tire işarəsi qoyuruq ki Firebase massivi silməsin
                     groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
                     if(hasY) yCount++;
                 });
@@ -1172,7 +1325,6 @@
                     const hasY = noteContainer.querySelector('.btn-good.active-y') !== null;
                     const hasX = noteContainer.querySelector('.btn-bad.active-x') !== null;
                     if(hasY || hasX) anyQuestionAnswered = true;
-                    // Null əvəzinə tire işarəsi qoyuruq ki Firebase massivi silməsin
                     groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
                     groupDetails.note = noteContainer.querySelector('textarea').value || "";
                     if(hasY) yCount++;
@@ -1207,11 +1359,10 @@
                 date: new Date().toLocaleDateString('az-AZ'), 
                 timestamp: Date.now(), 
                 catData: catScores, 
-                coords: currentCoords || "", // Əgər null-dursa empty string göndəririk xəta çıxmasın
+                coords: currentCoords || "", 
                 details: detailedAnswers 
             };
 
-            // Offline Check (Oflayn rejim əlavəsi)
             if (!navigator.onLine) {
                 let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
                 offlineData.push(visit);
