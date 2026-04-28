@@ -25,7 +25,7 @@
         .dark .glass-card { background: rgba(15, 23, 42, 0.7); border-color: rgba(255, 255, 255, 0.08); }
         .stat-card { position: relative; overflow: hidden; border: none !important; transition: all 0.4s ease; }
         .stat-card:hover { transform: translateY(-8px); }
-        .stat-card i { position: absolute; right: -15px; bottom: -15px; font-size: 6rem; opacity: 0.15; color: white; }
+        .stat-card i.bg-icon { position: absolute; right: -15px; bottom: -15px; font-size: 6rem; opacity: 0.15; color: white; }
         .nav-btn { padding: 0.8rem 1.5rem; margin: 4px 0; font-size: 14px; display: flex; align-items: center; gap: 12px; border-radius: 1rem; color: #64748b; transition: 0.3s; }
         .nav-active { background: var(--primary) !important; color: white !important; box-shadow: 0 8px 20px -5px rgba(59, 130, 246, 0.4); }
         #auth-screen { position: fixed; inset: 0; z-index: 1000; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
@@ -41,12 +41,10 @@
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Checklist Styles */
         .check-btn { width: 44px; height: 44px; border-radius: 12px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; transition: 0.3s; color: #cbd5e1; }
         .check-btn.active-y { background: #dcfce7; border-color: #4ade80; color: #166534; }
         .check-btn.active-x { background: #fee2e2; border-color: #f87171; color: #991b1b; }
 
-        /* Sidebar & Menu Fixes */
         #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; backdrop-filter: blur(4px); }
         aside { position: fixed; transform: translateX(-100%); z-index: 9999; height: 100vh; width: 280px; transition: transform 0.3s ease-in-out; }
         aside.open { transform: translateX(0); }
@@ -55,13 +53,17 @@
         .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 75px; display: flex; align-items: center; padding: 0 24px; }
         .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
 
-        /* Mobile Layout Fix */
+        /* Custom Scrollbar for Feed */
+        .feed-scroll::-webkit-scrollbar { width: 6px; }
+        .feed-scroll::-webkit-scrollbar-track { background: transparent; }
+        .feed-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .feed-scroll::-webkit-scrollbar-thumb { background: #475569; }
+
         @media (max-width: 768px) {
             main { padding-top: 110px !important; }
             .dashboard-header-fix { margin-top: 15px !important; }
         }
 
-        /* Laptop version fix */
         @media (min-width: 769px) {
             main { margin-left: 0; transition: 0.3s; padding-top: 110px !important; }
             .mobile-header { display: flex !important; }
@@ -115,7 +117,7 @@
                 <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
             </nav>
             <div class="mt-auto pt-6 border-t border-slate-100">
-                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"><i class="fas fa-plus-circle text-lg"></i> Yeni Checklist</button>
+                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"><i class="fa-solid fa-plus-circle text-lg"></i> Yeni Checklist</button>
             </div>
         </aside>
 
@@ -131,7 +133,8 @@
                         <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter">PERFORMANS ANALİZİ</h1>
                         <p id="welcome-message" class="text-[12px] font-black text-slate-400 mt-1 uppercase tracking-wider"></p>
                     </div>
-                    <div class="w-full lg:w-auto">
+                    <div class="w-full lg:w-auto flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-slate-400"></i>
                         <select id="rep-selector" onchange="updateDashboard()" class="glass-card w-full px-6 py-3 font-black text-xs min-w-[220px] outline-none">
                             <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
                             <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
@@ -147,24 +150,50 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-blue-600 to-blue-500 text-white">
                             <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_avg">Ortalama Bal</p>
-                            <h3 id="rep-avg-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-star"></i>
+                            <h3 id="rep-avg-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-star bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-emerald-600 to-emerald-500 text-white">
                             <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_last">Ən Yüksək Bal</p>
-                            <h3 id="last-point-score" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-ranking-star"></i>
+                            <h3 id="last-point-score" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-ranking-star bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-amber-500 to-orange-400 text-white">
                             <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_count">Ziyarət Sayı</p>
-                            <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-person-walking-luggage"></i>
+                            <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-clipboard-check bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-rose-500 to-pink-500 text-white">
-                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_trend">İnkişaf Trendi</p>
-                            <h3 id="trend-stat" class="text-3xl md:text-4xl font-black">0%</h3><i class="fa-solid fa-chart-line"></i>
+                            <p class="text-[10px] font-black uppercase mb-2" data-i18n="stat_trend">Təlim Mərkəzi</p>
+                            <h3 id="trend-stat" class="text-3xl md:text-4xl font-black">AZL</h3><i class="fa-solid fa-building-user bg-icon"></i>
                         </div>
                     </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 glass-card p-4 md:p-8 h-[350px] md:h-[450px]"><canvas id="rankingChart"></canvas></div>
-                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex items-center justify-center"><canvas id="radarChart"></canvas></div>
+                        <div class="lg:col-span-2 glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-trophy mr-2"></i>Nümayəndələrin Reytinqi</h3>
+                            <div class="flex-1 relative"><canvas id="rankingChart"></canvas></div>
+                        </div>
+                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-bullseye mr-2"></i>Kateqoriya Balansı</h3>
+                            <div class="flex-1 relative flex items-center justify-center"><canvas id="radarChart"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i>Nəticə Bölgüsü</h3>
+                            <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
+                        </div>
+                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i>İnkişaf Dinamikası</h3>
+                            <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
+                        </div>
+                        <div class="glass-card p-6 md:p-8 h-[380px] flex flex-col">
+                            <h3 class="font-black text-blue-600 text-xs uppercase mb-4 tracking-widest flex items-center justify-between">
+                                <span><i class="fa-solid fa-bolt text-amber-500 mr-2"></i>Canlı Fəaliyyət</span>
+                                <span class="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 px-2 py-1 rounded-lg" id="feed-count">0 Əməliyyat</span>
+                            </h3>
+                            <div id="activity-feed" class="flex-1 overflow-y-auto space-y-4 pr-2 feed-scroll">
+                                </div>
+                        </div>
                     </div>
                 </div>
 
@@ -174,14 +203,28 @@
 
                 <div id="new-checklist-form" class="section-content">
                     <div class="max-w-4xl mx-auto space-y-6 pb-32">
-                        <div class="glass-card p-6 md:p-8 shadow-sm">
-                            <label class="block text-xs font-black text-blue-600 uppercase mb-4" data-i18n="input_code">Satış Nöqtəsi Kodu:</label>
-                            <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-6 rounded-2xl font-black text-xl md:text-2xl outline-none border border-transparent focus:border-blue-500 transition-all">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="glass-card p-6 md:p-8 shadow-sm">
+                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-store mr-2"></i>Satış Nöqtəsi Kodu:</label>
+                                <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-5 rounded-2xl font-black text-xl outline-none border border-transparent focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="glass-card p-6 md:p-8 shadow-sm">
+                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-user-tie mr-2"></i>Təhkim Olunmuş Nümayəndə:</label>
+                                <select id="form-rep-selector" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-5 rounded-2xl font-black text-lg outline-none border border-transparent focus:border-blue-500 transition-all">
+                                    <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                                    <option value="Anar Babayev">Anar Babayev</option>
+                                    <option value="Emil Hüseynov">Emil Hüseynov</option>
+                                    <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                                    <option value="Loğman Əliyev">Loğman Əliyev</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div id="dynamic-questions" class="space-y-6 md:space-y-8"></div>
+                        
                         <div class="glass-card p-6 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-6 shadow-2xl">
-                            <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 md:p-6 rounded-3xl" data-i18n="btn_checkin">Check-in et</button>
-                            <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 md:p-6 rounded-3xl uppercase" data-i18n="btn_save">Saxla və Bitir</button>
+                            <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 md:p-6 rounded-3xl"><i class="fa-solid fa-location-crosshairs mr-2"></i>Check-in et</button>
+                            <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 md:p-6 rounded-3xl uppercase"><i class="fa-solid fa-floppy-disk mr-2"></i>Saxla və Bitir</button>
                         </div>
                     </div>
                 </div>
@@ -193,7 +236,7 @@
                                 <div class="w-14 h-14 md:w-16 md:h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-black" id="profile-initials">AZ</div>
                                 <div>
                                     <h3 class="text-lg md:text-xl font-black dark:text-white" id="profile-name">İstifadəçi Adı</h3>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold" data-i18n="nav_settings">Ayarlar</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold"><i class="fa-solid fa-user-gear mr-1"></i>Təlimçi Hesabı</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 ml-auto">
@@ -207,17 +250,17 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="glass-card p-6 md:p-8">
-                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]" data-i18n="lang_selection">Dil Seçimləri</h4>
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-language mr-2"></i>Dil Seçimləri</h4>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <button onclick="changeLanguage('az')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Azərbaycan 🇦🇿</button>
-                                    <button onclick="changeLanguage('tr')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Türkçe 🇹🇷</button>
-                                    <button onclick="changeLanguage('en')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">English 🇺🇸</button>
-                                    <button onclick="changeLanguage('ru')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Русский 🇷🇺</button>
+                                    <button onclick="changeLanguage('az')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Azərbaycan</button>
+                                    <button onclick="changeLanguage('tr')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Türkçe</button>
+                                    <button onclick="changeLanguage('en')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">English</button>
+                                    <button onclick="changeLanguage('ru')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Русский</button>
                                 </div>
                             </div>
 
                             <div class="glass-card p-6 md:p-8">
-                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]" data-i18n="rep_selection">Hesabat Çıxarma</h4>
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-file-export mr-2"></i>Hesabat Çıxarma (CSV)</h4>
                                 <select id="report-rep-selector" class="w-full p-4 rounded-xl border font-bold text-xs mb-4 outline-none dark:bg-slate-800 dark:border-white/10">
                                     <option value="">Nümayəndə seçin</option>
                                     <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
@@ -226,13 +269,13 @@
                                     <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
                                     <option value="Loğman Əliyev">Loğman Əliyev</option>
                                 </select>
-                                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700">Hesabatı Çək</button>
+                                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700"><i class="fa-solid fa-download mr-2"></i>Hesabatı Yüklə</button>
                             </div>
                         </div>
 
                         <div class="glass-card overflow-hidden">
                             <button onclick="toggleAccordion('reports-content')" class="w-full p-6 md:p-8 flex justify-between items-center bg-white/50 dark:bg-white/5">
-                                <span class="font-black text-blue-600 uppercase text-xs" data-i18n="internal_report">Hesabatlar</span>
+                                <span class="font-black text-blue-600 uppercase text-xs"><i class="fa-solid fa-chart-column mr-2"></i>Daxili Hesabatlar</span>
                                 <i class="fa-solid fa-chevron-down text-blue-600"></i>
                             </button>
                             <div id="reports-content" class="hidden p-6 md:p-8 space-y-6 border-t border-slate-100 dark:border-white/5">
@@ -250,7 +293,7 @@
                         </div>
 
                         <button onclick="logout()" class="w-full bg-rose-500 text-white p-6 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-3">
-                            <i class="fas fa-sign-out-alt"></i> Hesabdan çıxış
+                            <i class="fa-solid fa-power-off"></i> Hesabdan çıxış
                         </button>
                     </div>
                 </div>
@@ -279,16 +322,16 @@
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
-        let rankingChart, radarChart, map;
+        let rankingChart, radarChart, map, doughnutChart, trendChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
-            tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğilim", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
-            en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Trend", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
-            ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
+            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
+            tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
+            en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
+            ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
         };
 
         function toggleSidebar() {
@@ -408,12 +451,57 @@
             window.requestAnimationFrame(step);
         }
 
+        function timeSince(timestamp) {
+            const seconds = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            if (seconds < 60) return seconds + " saniyə əvvəl";
+            if (seconds < 3600) return Math.floor(seconds / 60) + " dəqiqə əvvəl";
+            if (seconds < 86400) return Math.floor(seconds / 3600) + " saat əvvəl";
+            return Math.floor(seconds / 86400) + " gün əvvəl";
+        }
+
+        function renderActivityFeed(allVisits) {
+            const feedContainer = document.getElementById('activity-feed');
+            const countLabel = document.getElementById('feed-count');
+            
+            if (allVisits.length === 0) {
+                feedContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Heç bir fəaliyyət yoxdur.</p>`;
+                countLabel.innerText = "0 Əməliyyat";
+                return;
+            }
+
+            countLabel.innerText = `${allVisits.length} Əməliyyat`;
+            
+            const latestVisits = allVisits.slice(0, 15); // Son 15 əməliyyat
+            feedContainer.innerHTML = latestVisits.map(v => {
+                const trainerName = v.trainer || "Təlimçi";
+                const isGood = v.score >= 80;
+                const color = isGood ? "text-emerald-500" : (v.score >= 60 ? "text-amber-500" : "text-rose-500");
+                const bg = isGood ? "bg-emerald-50 dark:bg-emerald-900/10" : (v.score >= 60 ? "bg-amber-50 dark:bg-amber-900/10" : "bg-rose-50 dark:bg-rose-900/10");
+                
+                return `
+                <div class="p-4 rounded-2xl ${bg} border border-transparent shadow-sm flex items-start gap-3 transition-transform hover:translate-x-1">
+                    <div class="mt-1 ${color}"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="flex-1">
+                        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                            <span class="font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-chalkboard-user mr-1"></i>${trainerName}</span> 
+                            <span class="text-[10px] text-slate-400 mx-1">${timeSince(v.timestamp)}</span> 
+                            <span class="font-bold text-blue-600">${v.code}</span> nöqtəsini (<span class="italic text-slate-500">${v.rep}</span>) yoxladı.
+                        </p>
+                        <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-[#0f172a] shadow-sm">
+                            <span class="text-[10px] font-black uppercase tracking-wider ${color}">Nəticə: ${v.score} Bal</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function updateDashboard() {
             const selectedRep = document.getElementById('rep-selector').value;
             let allVisits = [];
             Object.values(database).forEach(v => allVisits = allVisits.concat(v));
-            allVisits.sort((a,b) => b.timestamp - a.timestamp);
-            const filtered = selectedRep ? (database[selectedRep] || []) : allVisits;
+            allVisits.sort((a,b) => b.timestamp - a.timestamp); // Ən yenidən ən köhnəyə
+
+            const filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
 
             animateValue('total-visits-stat', 0, filtered.length, 1000);
             const avg = filtered.length ? Math.round(filtered.reduce((a,b) => a + b.score, 0) / filtered.length) : 0;
@@ -421,28 +509,89 @@
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
-            updateCharts(selectedRep, filtered);
+            updateCharts(filtered, allVisits);
             renderHistory(filtered);
+            renderActivityFeed(allVisits); // Feed həmişə ümumi məlumatı göstərsin (və ya istsəniz filterli)
         }
 
-        function updateCharts(repName, filtered) {
+        function updateCharts(filtered, allVisits) {
+            // 1. Bar Chart (Ranking)
             const ctxR = document.getElementById('rankingChart').getContext('2d');
             const labels = Object.keys(database);
             const scores = labels.map(r => (database[r].reduce((a,b)=>a+b.score,0)/database[r].length).toFixed(1));
             if(rankingChart) rankingChart.destroy();
             rankingChart = new Chart(ctxR, {
                 type: 'bar',
-                data: { labels, datasets: [{ label: 'Ortalama', data: scores, backgroundColor: '#3b82f6', borderRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false }
+                data: { labels, datasets: [{ label: 'Ortalama Bal', data: scores, backgroundColor: '#3b82f6', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
             });
 
+            // 2. Radar Chart
             const ctxRadar = document.getElementById('radarChart').getContext('2d');
-            const radarData = filtered.length ? filtered[0].catData : [0,0,0,0,0];
+            const radarData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; // Sadələşdirmək üçün son yoxlanış götürülür
             if(radarChart) radarChart.destroy();
             radarChart = new Chart(ctxRadar, {
                 type: 'radar',
-                data: { labels:['4+4','B.Beş','S.Keno','Poz-Q','Term'], datasets:[{ data:radarData, backgroundColor:'rgba(59,130,246,0.2)', borderColor:'#3b82f6' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100 } } }
+                data: { labels:['4+4','B.Beş','S.Keno','Poz-Q','Term'], datasets:[{ label: 'Son Analiz', data:radarData, backgroundColor:'rgba(59,130,246,0.2)', borderColor:'#3b82f6', pointBackgroundColor: '#3b82f6' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: { display: false } } } }
+            });
+
+            // 3. Doughnut Chart (Success Distribution)
+            let ela = 0, kafi = 0, zeif = 0;
+            filtered.forEach(v => {
+                if(v.score >= 90) ela++;
+                else if(v.score >= 70) kafi++;
+                else zeif++;
+            });
+            const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+            if(doughnutChart) doughnutChart.destroy();
+            doughnutChart = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: { 
+                    labels: ['Əla (90+)', 'Kafi (70-89)', 'Zəif (<70)'], 
+                    datasets: [{ data: [ela, kafi, zeif], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0, hoverOffset: 4 }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+            });
+
+            // 4. Line Chart (Trend over time)
+            // Qrafiki xronoloji etmək üçün tərs çeviririk
+            const chronological = [...filtered].reverse(); 
+            const trendDates = [];
+            const trendScores = [];
+            
+            // Sadəcə son 10 yoxlanışı götürək ki qrafik sıxışmasın
+            const last10 = chronological.slice(-10);
+            last10.forEach(v => {
+                const d = new Date(v.timestamp);
+                trendDates.push(`${d.getDate()}/${d.getMonth()+1}`);
+                trendScores.push(v.score);
+            });
+
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: trendDates.length ? trendDates : ['Yoxdur'],
+                    datasets: [{
+                        label: 'İnkişaf Balı',
+                        data: trendScores.length ? trendScores : [0],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4, // Smooth curve
+                        fill: true,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100, grid: { display: false } }, x: { grid: { display: false } } }
+                }
             });
         }
 
@@ -451,8 +600,8 @@
             list.innerHTML = entries.map(e => `
                 <div class="glass-card p-5 flex justify-between items-center shadow-sm">
                     <div>
-                        <p class="font-black text-blue-600 text-lg">${e.code}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">${e.rep} • ${e.date}</p>
+                        <p class="font-black text-blue-600 text-lg"><i class="fa-solid fa-store mr-2"></i>${e.code}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${e.rep} • <i class="fa-regular fa-calendar ml-1 mr-1"></i>${e.date}</p>
                     </div>
                     <div class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm">${e.score}</div>
                 </div>
@@ -544,11 +693,11 @@
             if(!rep) return alert("Nümayəndə seçin!");
             const data = database[rep] || [];
             if(data.length === 0) return alert("Məlumat tapılmadı!");
-            const csvContent = "data:text/csv;charset=utf-8,Kod,Bal,Tarix\n" + data.map(e => `${e.code},${e.score},${e.date}`).join("\n");
+            const csvContent = "data:text/csv;charset=utf-8,Kod,Nümayəndə,Təlimçi,Bal,Tarix\n" + data.map(e => `${e.code},${e.rep},${e.trainer || 'Anonim'},${e.score},${e.date}`).join("\n");
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Report_${rep}.csv`);
+            link.setAttribute("download", `Report_${rep.replace(/\s+/g, '_')}.csv`);
             document.body.appendChild(link);
             link.click();
         }
@@ -618,7 +767,9 @@
             const code = document.getElementById('point-code-input').value.trim();
             if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
 
-            const rep = currentUser.fullName || currentUser.name || "Anonim";
+            // Nümayəndə (Yoxlanılan şəxs) və Təlimçi (Yoxlayan şəxs)
+            const rep = document.getElementById('form-rep-selector').value;
+            const trainer = currentUser.fullName || currentUser.name || "Anonim Təlimçi";
             
             let totalQuestions = 0;
             let totalCorrect = 0;
@@ -649,6 +800,7 @@
 
             const visit = { 
                 rep, 
+                trainer, // Təlimçinin adı xüsusi olaraq qeyd edilir
                 code, 
                 score: finalScore, 
                 date: new Date().toLocaleDateString('az-AZ'), 
@@ -671,7 +823,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    document.getElementById('geo-btn').innerText = "📍 MƏKAN OK";
+                    document.getElementById('geo-btn').innerHTML = "<i class='fa-solid fa-location-dot mr-2'></i> MƏKAN OK";
                     document.getElementById('geo-btn').classList.add('bg-green-600');
                 }, () => alert("Məkan icazəsi alınmadı."));
             }
