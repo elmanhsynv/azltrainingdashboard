@@ -124,7 +124,7 @@
                 <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
             </nav>
             <div class="mt-auto pt-6 border-t border-slate-100">
-                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"><i class="fa-solid fa-plus-circle text-lg"></i> Yeni Checklist</button>
+                <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform"><i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span></button>
             </div>
         </aside>
 
@@ -175,12 +175,12 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2 glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col overflow-hidden shadow-sm">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Nümayəndələrin Reytinqi</h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi</span></h3>
                             <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
                                 </div>
                         </div>
                         <div class="glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col shadow-sm">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-bullseye mr-2"></i>Kateqoriya Balansı</h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-bullseye mr-2"></i><span data-i18n="dash_cat_balance">Kateqoriya Balansı</span></h3>
                             <div id="category-bars-container" class="flex-1 flex flex-col justify-evenly">
                                 </div>
                         </div>
@@ -188,16 +188,16 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i>Nəticə Bölgüsü</h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i><span data-i18n="dash_dist">Nəticə Bölgüsü</span></h3>
                             <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
                         </div>
                         <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i>İnkişaf Dinamikası</h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası</span></h3>
                             <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
                         </div>
                         <div class="glass-card p-6 md:p-8 h-[380px] flex flex-col">
                             <h3 class="font-black text-blue-600 text-xs uppercase mb-4 tracking-widest flex items-center justify-between">
-                                <span><i class="fa-solid fa-bolt text-amber-500 mr-2"></i>Canlı Fəaliyyət</span>
+                                <span><i class="fa-solid fa-bolt text-amber-500 mr-2"></i><span data-i18n="dash_feed">Canlı Fəaliyyət</span></span>
                                 <span class="text-[9px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 px-2 py-1 rounded-lg" id="feed-count">0 Əməliyyat</span>
                             </h3>
                             <div id="activity-feed" class="flex-1 overflow-y-auto space-y-4 pr-2 feed-scroll">
@@ -214,11 +214,11 @@
                     <div class="max-w-4xl mx-auto space-y-6 pb-32">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="glass-card p-6 md:p-8 shadow-sm">
-                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-store mr-2"></i>Satış Nöqtəsi Kodu:</label>
+                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-store mr-2"></i><span data-i18n="input_code">Satış Nöqtəsi Kodu:</span></label>
                                 <input type="text" id="point-code-input" placeholder="Məs: 11604.0001" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-5 rounded-2xl font-black text-xl outline-none border border-transparent focus:border-blue-500 transition-all">
                             </div>
                             <div class="glass-card p-6 md:p-8 shadow-sm">
-                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-user-tie mr-2"></i>Təhkim Olunmuş Nümayəndə:</label>
+                                <label class="block text-xs font-black text-blue-600 uppercase mb-4"><i class="fa-solid fa-user-tie mr-2"></i><span data-i18n="input_rep">Təhkim Olunmuş Nümayəndə:</span></label>
                                 <select id="form-rep-selector" class="w-full bg-slate-50 dark:bg-white/5 p-4 md:p-5 rounded-2xl font-black text-lg outline-none border border-transparent focus:border-blue-500 transition-all">
                                     <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
                                     <option value="Anar Babayev">Anar Babayev</option>
@@ -232,8 +232,8 @@
                         <div id="dynamic-questions" class="space-y-6 md:space-y-8"></div>
                         
                         <div class="glass-card p-6 md:p-10 flex flex-col sm:flex-row gap-4 md:gap-6 shadow-2xl">
-                            <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 md:p-6 rounded-3xl"><i class="fa-solid fa-location-crosshairs mr-2"></i>Check-in et</button>
-                            <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 md:p-6 rounded-3xl uppercase"><i class="fa-solid fa-floppy-disk mr-2"></i>Saxla və Bitir</button>
+                            <button id="geo-btn" onclick="getLocation()" class="flex-1 bg-amber-500 text-white font-black p-5 md:p-6 rounded-3xl"><i class="fa-solid fa-location-crosshairs mr-2"></i><span data-i18n="btn_checkin">Check-in et</span></button>
+                            <button onclick="processAndSave()" class="flex-1 bg-blue-600 text-white font-black p-5 md:p-6 rounded-3xl uppercase"><i class="fa-solid fa-floppy-disk mr-2"></i><span data-i18n="btn_save">Saxla və Bitir</span></button>
                         </div>
                     </div>
                 </div>
@@ -245,7 +245,7 @@
                                 <div class="w-14 h-14 md:w-16 md:h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white text-xl md:text-2xl font-black" id="profile-initials">AZ</div>
                                 <div>
                                     <h3 class="text-lg md:text-xl font-black dark:text-white" id="profile-name">İstifadəçi Adı</h3>
-                                    <p class="text-[10px] text-slate-400 uppercase font-bold"><i class="fa-solid fa-user-gear mr-1"></i>Təlimçi Hesabı</p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold"><i class="fa-solid fa-user-gear mr-1"></i><span data-i18n="trainer_acc">Təlimçi Hesabı</span></p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 ml-auto">
@@ -259,7 +259,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="glass-card p-6 md:p-8">
-                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-language mr-2"></i>Dil Seçimləri</h4>
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-language mr-2"></i><span data-i18n="lang_selection">Dil Seçimləri</span></h4>
                                 <div class="grid grid-cols-2 gap-3">
                                     <button onclick="changeLanguage('az')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Azərbaycan</button>
                                     <button onclick="changeLanguage('tr')" class="p-3 border rounded-xl font-bold text-xs hover:bg-blue-50 dark:hover:bg-slate-800 transition-colors">Türkçe</button>
@@ -269,7 +269,7 @@
                             </div>
 
                             <div class="glass-card p-6 md:p-8">
-                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-file-export mr-2"></i>Hesabat Çıxarma (CSV)</h4>
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-file-export mr-2"></i><span data-i18n="rep_selection">Hesabat Çıxarma (CSV)</span></h4>
                                 <select id="report-rep-selector" class="w-full p-4 rounded-xl border font-bold text-xs mb-4 outline-none dark:bg-slate-800 dark:border-white/10">
                                     <option value="">Nümayəndə seçin</option>
                                     <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
@@ -278,22 +278,22 @@
                                     <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
                                     <option value="Loğman Əliyev">Loğman Əliyev</option>
                                 </select>
-                                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700"><i class="fa-solid fa-download mr-2"></i>Hesabatı Yüklə</button>
+                                <button onclick="downloadReport()" class="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-700"><i class="fa-solid fa-download mr-2"></i><span data-i18n="btn_download">Hesabatı Yüklə</span></button>
                             </div>
                         </div>
 
                         <div class="glass-card overflow-hidden">
                             <button onclick="toggleAccordion('reports-content')" class="w-full p-6 md:p-8 flex justify-between items-center bg-white/50 dark:bg-white/5">
-                                <span class="font-black text-blue-600 uppercase text-xs"><i class="fa-solid fa-chart-column mr-2"></i>Daxili Hesabatlar</span>
+                                <span class="font-black text-blue-600 uppercase text-xs"><i class="fa-solid fa-chart-column mr-2"></i><span data-i18n="internal_report">Daxili Hesabatlar</span></span>
                                 <i class="fa-solid fa-chevron-down text-blue-600"></i>
                             </button>
                             <div id="reports-content" class="hidden p-6 md:p-8 space-y-6 border-t border-slate-100 dark:border-white/5">
                                 <div class="flex flex-col sm:flex-row gap-4">
-                                    <button onclick="setReportType('daily')" id="btn-daily" class="flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600">Gündəlik hesabat</button>
-                                    <button onclick="setReportType('weekly')" id="btn-weekly" class="flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400">Həftəlik hesabat</button>
+                                    <button onclick="setReportType('daily')" id="btn-daily" class="flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600"><span data-i18n="btn_daily">Gündəlik hesabat</span></button>
+                                    <button onclick="setReportType('weekly')" id="btn-weekly" class="flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400"><span data-i18n="btn_weekly">Həftəlik hesabat</span></button>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Tarix seçin</label>
+                                    <label class="text-[10px] font-black text-slate-400 uppercase ml-2"><span data-i18n="date_select">Tarix seçin</span></label>
                                     <input type="date" id="report-date" class="w-full p-4 rounded-xl border font-bold text-xs outline-none dark:bg-slate-800 dark:border-white/10" onchange="generateInternalReport()">
                                     <p id="weekly-info" class="hidden text-[10px] text-amber-600 font-bold ml-2 italic">* Həftəlik hesabat üçün Bazar ertəsini seçin.</p>
                                 </div>
@@ -302,7 +302,7 @@
                         </div>
 
                         <button onclick="logout()" class="w-full bg-rose-500 text-white p-6 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-3">
-                            <i class="fa-solid fa-power-off"></i> Hesabdan çıxış
+                            <i class="fa-solid fa-power-off"></i> <span data-i18n="btn_logout">Hesabdan çıxış</span>
                         </button>
                     </div>
                 </div>
@@ -337,10 +337,18 @@
         let reportType = 'daily';
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
-            tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
-            en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
-            ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
+            az: { 
+                nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (CSV)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
+            },
+            tr: { 
+                nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (CSV)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
+            },
+            en: { 
+                nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (CSV)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
+            },
+            ru: { 
+                nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (CSV)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
+            }
         };
 
         function toggleSidebar() {
