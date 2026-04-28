@@ -139,7 +139,7 @@
             </div>
             <nav class="flex flex-col w-full gap-1 flex-1">
                 <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_home">Dashboard</span></button>
-                <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-list-check"></i> <span data-i18n="nav_checklist">Checklist</span></button>
+                <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-list-check"></i> <span data-i18n="nav_checklist">Nəticələr</span></button>
                 <button onclick="showSection('ziyaretler')" id="nav-visits" class="nav-btn"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_visits">Ziyarətlər</span></button>
                 <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
             </nav>
@@ -160,7 +160,7 @@
                         <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter hover:scale-[1.01] transition-transform cursor-default">PERFORMANS ANALİZİ</h1>
                         <p id="welcome-message" class="text-[12px] font-black text-slate-400 mt-1 uppercase tracking-wider"></p>
                     </div>
-                    <div class="w-full lg:w-auto flex items-center gap-2">
+                    <div id="header-filter-container" class="w-full lg:w-auto flex items-center gap-2">
                         <i class="fa-solid fa-filter text-slate-400"></i>
                         <select id="rep-selector" onchange="updateDashboard()" class="glass-card w-full px-6 py-3 font-black text-xs min-w-[220px] outline-none hover:shadow-md transition-all cursor-pointer">
                             <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
@@ -363,6 +363,17 @@
         </main>
     </div>
 
+    <div id="visit-modal" class="hidden fixed inset-0 z-[10000] bg-slate-900/50 backdrop-blur-sm flex justify-center items-end md:items-center">
+        <div class="bg-white dark:bg-slate-900 w-full md:w-3/4 max-w-2xl h-[85vh] md:h-auto md:max-h-[85vh] rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden transform transition-transform translate-y-full md:translate-y-0" id="visit-modal-content">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-black text-blue-600 text-lg uppercase tracking-wider" id="modal-title">Ziyarət Nəticəsi</h3>
+                <button onclick="closeVisitDetails()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-6" id="modal-body">
+            </div>
+        </div>
+    </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBBP5rDA_iLkwLGswMI8gAaTzpgqKQ5rf4",
@@ -378,23 +389,38 @@
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
+        let allVisitsGlobal = []; // Bütün ziyarətləri detallı modal üçün yadda saxlayırıq
         let map, doughnutChart, trendChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
 
+        // Qlobal Schema - Forma və Nəticə Detalları tərəfindən istifadə olunur
+        const formSchema = [
+            { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
+            { cat: "BeşdəBeş", q: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
+            { cat: "Super Keno", q: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
+            { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", q: ["Poz-qazan məhsullarının (qiymətləri ilə) tanıyırmı?", "Poz-qazan məhsullarını validasiya edirmi / edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında bilirmi?"] },
+            { cat: "Terminal istifadəsi", q: ["Terminal giriş/çıxış və keçidləri haqqında bilirmi?", "Tirajlı lotereyaların terminal üzrə funksiyalarını bilirmi?", "Ləğv/Yoxla/ Skan et funksiyalarını bilirmi?", "Hesabatları bilirmi?"] },
+            { cat: "Müştəri ilə ünsiyyət", hasNote: true, id: "n1", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+            { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true, id: "n2", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+            { cat: "Partnyorun xarici görünüşü", hasNote: true, id: "n3", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+            { cat: "Terminal aktivliyi", hasNote: true, id: "n4", goodLabel: "Aktivdir", badLabel: "Aktiv deyil" },
+            { cat: "Təklif etmə", hasNote: true, id: "n5", goodLabel: "Yaxşıdır", badLabel: "Pisdir" }
+        ];
+
         const trans = {
             az: { 
-                nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (CSV)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
+                nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (CSV)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
             },
             tr: { 
-                nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (CSV)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
+                nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (CSV)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
             },
             en: { 
-                nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (CSV)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
+                nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (CSV)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
             },
             ru: { 
-                nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (CSV)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
+                nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (CSV)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
             }
         };
 
@@ -489,10 +515,14 @@
             db.ref('visits').on('value', snap => {
                 const data = snap.val();
                 database = {};
-                if(data) Object.values(data).forEach(v => {
-                    if(!database[v.rep]) database[v.rep] = [];
-                    database[v.rep].push(v);
-                });
+                allVisitsGlobal = [];
+                if(data) {
+                    Object.values(data).forEach(v => {
+                        if(!database[v.rep]) database[v.rep] = [];
+                        database[v.rep].push(v);
+                        allVisitsGlobal.push(v);
+                    });
+                }
                 updateDashboard();
             });
             applyTrans();
@@ -544,13 +574,13 @@
                 const border = isGood ? "border-emerald-100 dark:border-emerald-900/50" : (v.score >= 60 ? "border-amber-100 dark:border-amber-900/50" : "border-rose-100 dark:border-rose-900/50");
                 
                 return `
-                <div class="p-4 rounded-2xl ${bg} border ${border} shadow-sm flex items-start gap-3 hover:-translate-y-0.5 hover:shadow-md hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer">
-                    <div class="mt-1 ${color}"><i class="fa-solid fa-circle-check"></i></div>
+                <div onclick="openVisitDetails(${v.timestamp})" class="p-4 rounded-2xl ${bg} border ${border} shadow-sm flex items-start gap-3 hover:-translate-y-0.5 hover:shadow-md hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group">
+                    <div class="mt-1 ${color} group-hover:scale-110 transition-transform"><i class="fa-solid fa-circle-check"></i></div>
                     <div class="flex-1">
                         <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                             <span class="font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-chalkboard-user mr-1"></i>${trainerName}</span> 
                             <span class="text-[10px] text-slate-400 mx-1">${timeSince(v.timestamp)}</span> 
-                            <span class="font-bold text-blue-600">${v.code}</span> nöqtəsini (<span class="italic text-slate-500">${v.rep}</span>) yoxladı.
+                            <span class="font-bold text-blue-600 group-hover:underline">${v.code}</span> nöqtəsini (<span class="italic text-slate-500">${v.rep}</span>) yoxladı.
                         </p>
                         <div class="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-[#0f172a] shadow-sm">
                             <span class="text-[10px] font-black uppercase tracking-wider ${color}">Nəticə: ${v.score} Bal</span>
@@ -582,7 +612,6 @@
                 let medal = '';
                 let avatarStyle = '';
                 
-                // Initials üçün baş hərfləri çıxarmaq
                 let initials = rep.name.split(' ').map(w => w.charAt(0)).join('').toUpperCase().substring(0, 2);
 
                 if (index === 0) {
@@ -625,8 +654,7 @@
 
         function updateDashboard() {
             const selectedRep = document.getElementById('rep-selector').value;
-            let allVisits = [];
-            Object.values(database).forEach(v => allVisits = allVisits.concat(v));
+            let allVisits = [...allVisitsGlobal];
             allVisits.sort((a,b) => b.timestamp - a.timestamp); 
 
             const filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
@@ -731,14 +759,75 @@
         function renderHistory(entries) {
             const list = document.getElementById('checklist-history-list');
             list.innerHTML = entries.map(e => `
-                <div class="glass-card p-5 flex justify-between items-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-default">
+                <div onclick="openVisitDetails(${e.timestamp})" class="glass-card p-5 flex justify-between items-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group">
                     <div>
-                        <p class="font-black text-blue-600 text-lg"><i class="fa-solid fa-store mr-2"></i>${e.code}</p>
+                        <p class="font-black text-blue-600 text-lg group-hover:text-blue-700 transition-colors"><i class="fa-solid fa-store mr-2"></i>${e.code}</p>
                         <p class="text-[9px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${e.rep} • <i class="fa-regular fa-calendar ml-1 mr-1"></i>${e.date}</p>
                     </div>
-                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm">${e.score}</div>
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm group-hover:scale-110 transition-transform">${e.score}</div>
                 </div>
             `).join('');
+        }
+
+        // Ziyarət detalları modalını açmaq
+        function openVisitDetails(timestamp) {
+            const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
+            if(!visit) return;
+            
+            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-slate-400 ml-2 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-lg">${visit.score} Bal</span>`;
+            
+            let html = `<div class="flex flex-wrap gap-4 mb-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span><i class="fa-solid fa-user-tie mr-1"></i> ${visit.rep}</span>
+                <span><i class="fa-solid fa-chalkboard-user mr-1"></i> ${visit.trainer || 'Anonim'}</span>
+                <span><i class="fa-regular fa-calendar mr-1"></i> ${visit.date}</span>
+            </div>`;
+
+            if(visit.details) {
+                visit.details.forEach(d => {
+                    const cat = formSchema[d.catIndex];
+                    html += `<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="font-black text-blue-600 uppercase text-[10px] tracking-widest mb-3">${cat.cat}</h4>
+                        <div class="space-y-3">`;
+                    
+                    if(cat.q) {
+                        cat.q.forEach((qText, i) => {
+                            const ans = d.answers[i];
+                            const icon = ans === 'y' ? '<i class="fa-solid fa-check text-emerald-500"></i>' : (ans === 'x' ? '<i class="fa-solid fa-times text-rose-500"></i>' : '<i class="fa-solid fa-minus text-slate-300"></i>');
+                            html += `<div class="flex justify-between items-start gap-4 pb-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
+                                <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">${qText}</p>
+                                <div class="shrink-0 pt-0.5 text-base">${icon}</div>
+                            </div>`;
+                        });
+                    } else if (cat.hasNote) {
+                        const ans = d.answers[0];
+                        const icon = ans === 'y' ? '<i class="fa-solid fa-check text-emerald-500 text-lg"></i>' : (ans === 'x' ? '<i class="fa-solid fa-times text-rose-500 text-lg"></i>' : '<i class="fa-solid fa-minus text-slate-300 text-lg"></i>');
+                        const statusText = ans === 'y' ? cat.goodLabel : (ans === 'x' ? cat.badLabel : 'Qeyd edilməyib');
+                        html += `<div class="flex justify-between items-center gap-4">
+                                <p class="text-sm text-slate-700 dark:text-slate-300 font-black">${statusText}</p>
+                                <div class="shrink-0">${icon}</div>
+                            </div>`;
+                        if(d.note) {
+                            html += `<div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-500 italic"><i class="fa-regular fa-comment-dots mr-1"></i> ${d.note}</div>`;
+                        }
+                    }
+                    html += `</div></div>`;
+                });
+            } else {
+                html += `<div class="p-10 text-center text-slate-400 font-bold text-sm bg-slate-50 dark:bg-slate-800 rounded-2xl shadow-inner"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Köhnə format ziyarət - Ətraflı detallar yadda saxlanılmayıb.</div>`;
+            }
+
+            document.getElementById('modal-body').innerHTML = html;
+            
+            const modal = document.getElementById('visit-modal');
+            const content = document.getElementById('visit-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeVisitDetails() {
+            const content = document.getElementById('visit-modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('visit-modal').classList.add('hidden'), 300);
         }
 
         function showSection(id) {
@@ -748,6 +837,9 @@
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
             
+            // Ayarlarda yuxarı filtrin gizlədilməsi
+            document.getElementById('header-filter-container').style.display = (id === 'ayarlar') ? 'none' : 'flex';
+
             if(document.getElementById('sidebar').classList.contains('open')) {
                 toggleSidebar(); 
             }
@@ -793,15 +885,14 @@
                 return;
             }
             let filtered = [];
-            const allVisits = Object.values(database).flat();
             if(reportType === 'daily') {
                 const targetStr = selectedDate.toLocaleDateString('az-AZ');
-                filtered = allVisits.filter(v => v.date === targetStr);
+                filtered = allVisitsGlobal.filter(v => v.date === targetStr);
             } else {
                 const startOfWeek = new Date(selectedDate);
                 const endOfWeek = new Date(startOfWeek);
                 endOfWeek.setDate(startOfWeek.getDate() + 6);
-                filtered = allVisits.filter(v => {
+                filtered = allVisitsGlobal.filter(v => {
                     const vDate = new Date(v.timestamp);
                     return vDate >= startOfWeek && vDate <= endOfWeek;
                 });
@@ -856,21 +947,8 @@
         }
 
         function renderForm() {
-            const schema = [
-                { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
-                { cat: "BeşdəBeş", q: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
-                { cat: "Super Keno", q: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
-                { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", q: ["Poz-qazan məhsullarının (qiymətləri ilə) tanıyırmı?", "Poz-qazan məhsullarını validasiya edirmi / edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında bilirmi?"] },
-                { cat: "Terminal istifadəsi", q: ["Terminal giriş/çıxış və keçidləri haqqında bilirmi?", "Tirajlı lotereyaların terminal üzrə funksiyalarını bilirmi?", "Ləğv/Yoxla/ Skan et funksiyalarını bilirmi?", "Hesabatları bilirmi?"] },
-                { cat: "Müştəri ilə ünsiyyət", hasNote: true, id: "n1", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
-                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true, id: "n2", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
-                { cat: "Partnyorun xarici görünüşü", hasNote: true, id: "n3", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
-                { cat: "Terminal aktivliyi", hasNote: true, id: "n4", goodLabel: "Aktivdir", badLabel: "Aktiv deyil" },
-                { cat: "Təklif etmə", hasNote: true, id: "n5", goodLabel: "Yaxşıdır", badLabel: "Pisdir" }
-            ];
-            
             let h = "";
-            schema.forEach((group, index) => {
+            formSchema.forEach((group, index) => {
                 h += `<div class="glass-card p-6 md:p-8 hover:shadow-lg transition-shadow" data-group-index="${index}"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
                 if(group.q) {
                     group.q.forEach(q => {
@@ -899,6 +977,7 @@
             document.getElementById('dynamic-questions').innerHTML = h;
         }
 
+        // Yenilənmiş xal sistemi ilə yaddaşa vurma
         function processAndSave() {
             const code = document.getElementById('point-code-input').value.trim();
             if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
@@ -906,32 +985,60 @@
             const rep = document.getElementById('form-rep-selector').value;
             const trainer = currentUser.fullName || currentUser.name || "Anonim Təlimçi";
             
-            let totalQuestions = 0;
-            let totalCorrect = 0;
+            let totalScore = 0;
             let catScores = [0, 0, 0, 0, 0]; 
-            let catCounts = [0, 0, 0, 0, 0];
+            let detailedAnswers = [];
+            let anyQuestionAnswered = false;
 
             const groups = document.querySelectorAll('#dynamic-questions > .glass-card');
             groups.forEach((group, index) => {
-                const yBtns = group.querySelectorAll('.active-y').length;
-                const xBtns = group.querySelectorAll('.active-x').length;
-                const groupTotal = yBtns + xBtns;
+                let groupDetails = { catIndex: index, answers: [], note: '' };
+                let yCount = 0;
+                
+                // Normal 4 suallıq qruplar üçün yoxlama
+                const rows = group.querySelectorAll('.flex.justify-between.items-center');
+                rows.forEach(row => {
+                    const hasY = row.querySelector('.active-y') !== null;
+                    const hasX = row.querySelector('.active-x') !== null;
+                    if(hasY || hasX) anyQuestionAnswered = true;
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : null));
+                    if(hasY) yCount++;
+                });
 
-                if (groupTotal > 0) {
-                    totalQuestions += groupTotal;
-                    totalCorrect += yBtns;
-
-                    if (index < 5) {
-                        catScores[index] += yBtns;
-                        catCounts[index] += groupTotal;
-                    }
+                // Tək seçimli / Qeyd olan qruplar üçün yoxlama
+                const noteContainer = group.querySelector('.space-y-4.mt-4');
+                if (noteContainer) {
+                    const hasY = noteContainer.querySelector('.btn-good.active-y') !== null;
+                    const hasX = noteContainer.querySelector('.btn-bad.active-x') !== null;
+                    if(hasY || hasX) anyQuestionAnswered = true;
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : null));
+                    groupDetails.note = noteContainer.querySelector('textarea').value;
+                    if(hasY) yCount++;
                 }
+
+                detailedAnswers.push(groupDetails);
+
+                let groupPoints = 0;
+                if (index < 5) {
+                    // İlk 5 kateqoriya (4 suallıq): 3-4 doğru = 10 bal, 2 doğru = 5 bal, 0-1 doğru = 0 bal
+                    if (yCount >= 3) groupPoints = 10;
+                    else if (yCount === 2) groupPoints = 5;
+                    else groupPoints = 0;
+                    
+                    catScores[index] = groupPoints * 10; // Qrafik üçün %
+                } else {
+                    // Son 5 kateqoriya (tək seçimli): doğru = 10 bal, yalnış = 0 bal
+                    if (yCount === 1) groupPoints = 10;
+                    else groupPoints = 0;
+                }
+                
+                totalScore += groupPoints;
             });
 
-            if (totalQuestions === 0) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
+            if (!anyQuestionAnswered) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
 
-            const finalScore = Math.round((totalCorrect / totalQuestions) * 100);
-            const catData = catScores.map((score, i) => catCounts[i] > 0 ? Math.round((score / catCounts[i]) * 100) : 0);
+            // Ümumi bal onsuz da 100 üzərindən hesablanır (10 qrup * maksimum 10 bal)
+            const finalScore = totalScore;
 
             const visit = { 
                 rep, 
@@ -940,8 +1047,9 @@
                 score: finalScore, 
                 date: new Date().toLocaleDateString('az-AZ'), 
                 timestamp: Date.now(), 
-                catData: catData, 
-                coords: currentCoords 
+                catData: catScores, 
+                coords: currentCoords,
+                details: detailedAnswers // Seçimlər ətraflı rejim üçün yadda saxlanılır
             };
 
             db.ref('visits').push(visit).then(() => {
