@@ -52,17 +52,22 @@
         aside.open { transform: translateX(0); }
         #mobile-overlay.open { display: block; }
         
-        .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 70px; display: flex; align-items: center; padding: 0 24px; }
+        .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 75px; display: flex; align-items: center; padding: 0 24px; }
         .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
+
+        /* Mobile Layout Fix */
+        @media (max-width: 768px) {
+            main { padding-top: 110px !important; }
+            .dashboard-header-fix { margin-top: 15px !important; }
+        }
 
         /* Laptop version fix */
         @media (min-width: 769px) {
-            main { margin-left: 0; transition: 0.3s; }
-            .mobile-header { display: flex !important; } /* Show header for laptop too */
+            main { margin-left: 0; transition: 0.3s; padding-top: 110px !important; }
+            .mobile-header { display: flex !important; }
         }
         
-        main { padding-top: 100px !important; }
-        .dashboard-header-fix { margin-top: 20px; }
+        .dashboard-header-fix { margin-top: 10px; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden flex-col md:flex-row">
@@ -124,7 +129,7 @@
                 <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
                     <div>
                         <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter">PERFORMANS ANALİZİ</h1>
-                        <p id="current-date" class="text-[11px] font-black text-slate-400 mt-1"></p>
+                        <p id="welcome-message" class="text-[12px] font-black text-slate-400 mt-1 uppercase tracking-wider"></p>
                     </div>
                     <div class="w-full lg:w-auto">
                         <select id="rep-selector" onchange="updateDashboard()" class="glass-card w-full px-6 py-3 font-black text-xs min-w-[220px] outline-none">
@@ -312,8 +317,6 @@
             updateDashboard();
         }
 
-        document.getElementById('current-date').innerText = new Intl.DateTimeFormat('az-AZ', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
-
         function toggleAuth(isLogin) {
             document.getElementById('login-form').classList.toggle('hidden', !isLogin);
             document.getElementById('register-form').classList.toggle('hidden', isLogin);
@@ -350,6 +353,9 @@
             document.getElementById('profile-name').innerText = currentUser.fullName || currentUser.name;
             document.getElementById('profile-initials').innerText = currentUser.name[0] + (currentUser.surname ? currentUser.surname[0] : "");
             
+            // Welcome message update
+            document.getElementById('welcome-message').innerText = `XOŞ GƏLDİN, ${currentUser.name}!`;
+
             db.ref('visits').on('value', snap => {
                 const data = snap.val();
                 database = {};
