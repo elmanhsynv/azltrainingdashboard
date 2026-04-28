@@ -492,13 +492,30 @@
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
         function renderForm() {
-            const schema = [{ cat: "4+4 Oyunu", q: ["Qaydaları bilir?", "Cekpotu tanıyır?"] }, { cat: "Terminal", q: ["Hesabat çıxarır?", "Ləğv edir?"] }];
+            const schema = [
+                { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
+                { cat: "BeşdəBeş", q: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
+                { cat: "Super Keno", q: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
+                { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", q: ["Poz-qazan məhsullarının (qiymətləri ilə) tanıyırmı?", "Poz-qazan məhsullarını validasiya edirmi / edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında bilirmi?"] },
+                { cat: "Terminal istifadəsi", q: ["Terminal giriş/çıxış və keçidləri haqqında bilirmi?", "Tirajlı lotereyaların terminal üzrə funksiyalarını bilirmi?", "Ləğv/Yoxla/ Skan et funksiyalarını bilirmi?", "Hesabatları bilirmi?"] },
+                { cat: "Müştəri ilə ünsiyyət", hasNote: true },
+                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true },
+                { cat: "Partnyorun xarici görünüşü", hasNote: true },
+                { cat: "Terminal aktivliyi", hasNote: true },
+                { cat: "Təklif etmə", hasNote: true }
+            ];
+            
             let h = "";
             schema.forEach(group => {
                 h += `<div class="glass-card p-6 md:p-8"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
-                group.q.forEach(q => {
-                    h += `<div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5"><p class="font-bold text-xs pr-4">${q}</p><div class="flex gap-2 shrink-0"><button onclick="this.className='w-10 h-10 rounded-lg bg-green-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">Y</button><button onclick="this.className='w-10 h-10 rounded-lg bg-red-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">X</button></div></div>`;
-                });
+                if(group.q) {
+                    group.q.forEach(q => {
+                        h += `<div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5"><p class="font-bold text-xs pr-4">${q}</p><div class="flex gap-2 shrink-0"><button onclick="this.className='w-10 h-10 rounded-lg bg-green-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">Y</button><button onclick="this.className='w-10 h-10 rounded-lg bg-red-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">X</button></div></div>`;
+                    });
+                }
+                if(group.hasNote) {
+                    h += `<textarea placeholder="Qeyd yerini daxil edin..." class="w-full mt-4 p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 outline-none text-xs font-bold transition-all min-h-[100px]"></textarea>`;
+                }
                 h += `</div>`;
             });
             document.getElementById('dynamic-questions').innerHTML = h;
