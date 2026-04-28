@@ -139,7 +139,7 @@
             </div>
             <nav class="flex flex-col w-full gap-1 flex-1">
                 <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_home">Dashboard</span></button>
-                <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-list-check"></i> <span data-i18n="nav_checklist">Nəticələr</span></button>
+                <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-square-poll-vertical"></i> <span data-i18n="nav_checklist">Nəticələr</span></button>
                 <button onclick="showSection('ziyaretler')" id="nav-visits" class="nav-btn"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="nav_visits">Ziyarətlər</span></button>
                 <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
             </nav>
@@ -296,11 +296,12 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-3 ml-auto hover:scale-105 transition-transform">
-                                <i class="fa-solid fa-moon text-slate-400"></i>
+                                <i class="fa-solid fa-sun text-amber-500 dark:text-slate-500 text-lg"></i>
                                 <label class="switch">
                                     <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
                                     <span class="slider"></span>
                                 </label>
+                                <i class="fa-solid fa-moon text-slate-400 dark:text-blue-400 text-lg"></i>
                             </div>
                         </div>
 
@@ -389,13 +390,12 @@
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
-        let allVisitsGlobal = []; // Bütün ziyarətləri detallı modal üçün yadda saxlayırıq
+        let allVisitsGlobal = []; 
         let map, doughnutChart, trendChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
 
-        // Qlobal Schema - Forma və Nəticə Detalları tərəfindən istifadə olunur
         const formSchema = [
             { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
             { cat: "BeşdəBeş", q: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
@@ -769,7 +769,6 @@
             `).join('');
         }
 
-        // Ziyarət detalları modalını açmaq
         function openVisitDetails(timestamp) {
             const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
             if(!visit) return;
@@ -837,7 +836,6 @@
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
             
-            // Ayarlarda yuxarı filtrin gizlədilməsi
             document.getElementById('header-filter-container').style.display = (id === 'ayarlar') ? 'none' : 'flex';
 
             if(document.getElementById('sidebar').classList.contains('open')) {
@@ -977,7 +975,6 @@
             document.getElementById('dynamic-questions').innerHTML = h;
         }
 
-        // Yenilənmiş xal sistemi ilə yaddaşa vurma
         function processAndSave() {
             const code = document.getElementById('point-code-input').value.trim();
             if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
@@ -995,24 +992,24 @@
                 let groupDetails = { catIndex: index, answers: [], note: '' };
                 let yCount = 0;
                 
-                // Normal 4 suallıq qruplar üçün yoxlama
                 const rows = group.querySelectorAll('.flex.justify-between.items-center');
                 rows.forEach(row => {
                     const hasY = row.querySelector('.active-y') !== null;
                     const hasX = row.querySelector('.active-x') !== null;
                     if(hasY || hasX) anyQuestionAnswered = true;
-                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : null));
+                    // Null əvəzinə tire işarəsi qoyuruq ki Firebase massivi silməsin
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
                     if(hasY) yCount++;
                 });
 
-                // Tək seçimli / Qeyd olan qruplar üçün yoxlama
                 const noteContainer = group.querySelector('.space-y-4.mt-4');
                 if (noteContainer) {
                     const hasY = noteContainer.querySelector('.btn-good.active-y') !== null;
                     const hasX = noteContainer.querySelector('.btn-bad.active-x') !== null;
                     if(hasY || hasX) anyQuestionAnswered = true;
-                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : null));
-                    groupDetails.note = noteContainer.querySelector('textarea').value;
+                    // Null əvəzinə tire işarəsi qoyuruq ki Firebase massivi silməsin
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
+                    groupDetails.note = noteContainer.querySelector('textarea').value || "";
                     if(hasY) yCount++;
                 }
 
@@ -1020,14 +1017,12 @@
 
                 let groupPoints = 0;
                 if (index < 5) {
-                    // İlk 5 kateqoriya (4 suallıq): 3-4 doğru = 10 bal, 2 doğru = 5 bal, 0-1 doğru = 0 bal
                     if (yCount >= 3) groupPoints = 10;
                     else if (yCount === 2) groupPoints = 5;
                     else groupPoints = 0;
                     
-                    catScores[index] = groupPoints * 10; // Qrafik üçün %
+                    catScores[index] = groupPoints * 10;
                 } else {
-                    // Son 5 kateqoriya (tək seçimli): doğru = 10 bal, yalnış = 0 bal
                     if (yCount === 1) groupPoints = 10;
                     else groupPoints = 0;
                 }
@@ -1037,7 +1032,6 @@
 
             if (!anyQuestionAnswered) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
 
-            // Ümumi bal onsuz da 100 üzərindən hesablanır (10 qrup * maksimum 10 bal)
             const finalScore = totalScore;
 
             const visit = { 
@@ -1048,8 +1042,8 @@
                 date: new Date().toLocaleDateString('az-AZ'), 
                 timestamp: Date.now(), 
                 catData: catScores, 
-                coords: currentCoords,
-                details: detailedAnswers // Seçimlər ətraflı rejim üçün yadda saxlanılır
+                coords: currentCoords || "", // Əgər null-dursa empty string göndəririk xəta çıxmasın
+                details: detailedAnswers 
             };
 
             db.ref('visits').push(visit).then(() => {
