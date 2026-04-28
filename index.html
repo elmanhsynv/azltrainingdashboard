@@ -17,6 +17,11 @@
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
     </script>
+    #map { 
+    height: 450px !important; 
+    width: 100%; 
+    border-radius: 2rem; 
+}
     <style>
         :root { --primary: #3b82f6; }
         body { transition: 0.4s; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); color: #1e293b; overflow-x: hidden; }
@@ -270,19 +275,56 @@
         }
 
         function showSection(id) {
-            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
-            const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(id));
-            if(btn) btn.classList.add('nav-active');
-            if(id === 'ziyaretler') setTimeout(initMap, 400);
-        }
+    // 1. Bütün bölmələri gizlədirik
+    document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+    
+    // 2. Seçdiyimiz bölməni aktiv edirik
+    const targetSection = document.getElementById(id);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+    // 3. Sol menyudakı düymənin rəngini dəyişirik
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+    const activeBtn = document.getElementById('nav-' + id);
+    if (activeBtn) {
+        activeBtn.classList.add('nav-active');
+    }
+
+    // 4. ƏGƏR SEÇİLƏN BÖLMƏ XƏRİTƏDİRSƏ:
+    if(id === 'ziyaretler') {
+        setTimeout(() => {
+            initMap(); // Xəritəni yaradan funksiyanı çağırırıq
+            if(map) { 
+                map.invalidateSize(); // Xəritənin ölçülərini yenidən yoxlayırıq
+            }
+        }, 400); // Bölmənin tam açılması üçün 0.4 saniye gözləyirik
+    }
+}
 
         function initMap() {
-            if(map) map.remove();
-            map = L.map('map').setView([40.4093, 49.8671], 11);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-        }
+    // Əvvəl köhnə xəritə varsa, onu yaddaşdan silirik (konflikt olmasın deyə)
+    if(map) { 
+        map.remove(); 
+    }
+
+    // Xəritəni "map" ID-li div-ə bağlayırıq və Bakını mərkəz seçirik
+    map = L.map('map').setView([40.4093, 49.8671], 11);
+
+    // Xəritənin şəkillərini (laylarını) yükləyirik
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // Bazadakı bütün ziyarətləri xəritəyə marker olaraq düzürük
+    Object.values(database).flat().forEach(e => { 
+        if(e.coords && e.coords.lat) { 
+            L.marker([e.coords.lat, e.coords.lng])
+             .addTo(map)
+             .bindPopup(`<b>${e.rep}</b><br>${e.code}`); 
+        } 
+    });
+}
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
         
