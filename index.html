@@ -17,11 +17,6 @@
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
     </script>
-    #map { 
-    height: 450px !important; 
-    width: 100%; 
-    border-radius: 2rem; 
-}
     <style>
         :root { --primary: #3b82f6; }
         body { transition: 0.4s; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); color: #1e293b; overflow-x: hidden; }
@@ -39,6 +34,14 @@
         .check-btn-v4 { width: 50px; height: 45px; border-radius: 12px; background: #f1f5f9; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; }
         .btn-success-active { background: #10b981 !important; color: white !important; }
         .btn-danger-active { background: #ef4444 !important; color: white !important; }
+
+        /* XƏRİTƏ ÜÇÜN MÜTLƏQ HÜNDÜRLÜK */
+        #map { 
+            height: 500px !important; 
+            width: 100%; 
+            border-radius: 2rem; 
+            z-index: 1;
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden flex-col md:flex-row">
@@ -154,7 +157,9 @@
             </div>
 
             <div id="ziyaretler" class="section-content">
-                <div class="glass-card p-6 shadow-2xl"><div id="map"></div></div>
+                <div class="glass-card p-6 shadow-2xl">
+                    <div id="map"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -275,56 +280,43 @@
         }
 
         function showSection(id) {
-    // 1. Bütün bölmələri gizlədirik
-    document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-    
-    // 2. Seçdiyimiz bölməni aktiv edirik
-    const targetSection = document.getElementById(id);
-    if (targetSection) {
-        targetSection.classList.add('active');
-    }
+            // BÖLMƏLƏRİ GİZLƏ VƏ AKTİV ET
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // MENYU DÜYMƏLƏRİNİ YENİLƏ
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+            const btn = document.getElementById('nav-' + id);
+            if(btn) btn.classList.add('nav-active');
 
-    // 3. Sol menyudakı düymənin rəngini dəyişirik
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
-    const activeBtn = document.getElementById('nav-' + id);
-    if (activeBtn) {
-        activeBtn.classList.add('nav-active');
-    }
-
-    // 4. ƏGƏR SEÇİLƏN BÖLMƏ XƏRİTƏDİRSƏ:
-    if(id === 'ziyaretler') {
-        setTimeout(() => {
-            initMap(); // Xəritəni yaradan funksiyanı çağırırıq
-            if(map) { 
-                map.invalidateSize(); // Xəritənin ölçülərini yenidən yoxlayırıq
+            // XƏRİTƏ BÖLMƏSİDİRSƏ, GECİKMƏ İLƏ BAŞLAT
+            if(id === 'ziyaretler') {
+                setTimeout(() => {
+                    initMap();
+                }, 400);
             }
-        }, 400); // Bölmənin tam açılması üçün 0.4 saniye gözləyirik
-    }
-}
+        }
 
         function initMap() {
-    // Əvvəl köhnə xəritə varsa, onu yaddaşdan silirik (konflikt olmasın deyə)
-    if(map) { 
-        map.remove(); 
-    }
+            // Əgər əvvəl xəritə yaradılıbsa, onu silirik
+            if(map) { map.remove(); }
 
-    // Xəritəni "map" ID-li div-ə bağlayırıq və Bakını mərkəz seçirik
-    map = L.map('map').setView([40.4093, 49.8671], 11);
+            // Xəritəni Bakı koordinatları ilə başladırıq
+            map = L.map('map').setView([40.4093, 49.8671], 11);
 
-    // Xəritənin şəkillərini (laylarını) yükləyirik
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-    }).addTo(map);
+            // Xəritənin şəkillərini yükləyirik
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
-    // Bazadakı bütün ziyarətləri xəritəyə marker olaraq düzürük
-    Object.values(database).flat().forEach(e => { 
-        if(e.coords && e.coords.lat) { 
-            L.marker([e.coords.lat, e.coords.lng])
-             .addTo(map)
-             .bindPopup(`<b>${e.rep}</b><br>${e.code}`); 
-        } 
-    });
-}
+            // Bütün ziyarətləri marker kimi əlavə et
+            Object.values(database).flat().forEach(e => {
+                if(e.coords && e.coords.lat) {
+                    L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code}`);
+                }
+            });
+
+            // Ölçüləri yenidən hesabla
+            map.invalidateSize();
+        }
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
         
@@ -353,8 +345,18 @@
         function processAndSave() {
             const code = document.getElementById('point-code-input').value;
             const rep = document.getElementById('rep-selector').value || "Anonim";
-            const visit = { rep, code, score: 85, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), catData: [80, 75, 90, 85, 70] };
+            const visit = { rep, code, score: 85, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), catData: [80, 75, 90, 85, 70], coords: currentCoords };
             db.ref('visits').push(visit).then(() => showSection('dashboard'));
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('geo-btn').innerText = "📍 MƏKAN OK";
+                    document.getElementById('geo-btn').classList.add('bg-green-600');
+                });
+            }
         }
 
         function toggleTheme() { document.documentElement.classList.toggle('dark'); }
