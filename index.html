@@ -179,9 +179,10 @@
                             <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
                                 </div>
                         </div>
-                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col shadow-sm">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-bullseye mr-2"></i>Kateqoriya Balansı</h3>
-                            <div class="flex-1 relative flex items-center justify-center"><canvas id="radarChart"></canvas></div>
+                        <div class="glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col shadow-sm">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-bullseye mr-2"></i>Kateqoriya Balansı</h3>
+                            <div id="category-bars-container" class="flex-1 flex flex-col justify-evenly">
+                                </div>
                         </div>
                     </div>
 
@@ -330,7 +331,7 @@
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
-        let radarChart, map, doughnutChart, trendChart;
+        let map, doughnutChart, trendChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
@@ -539,7 +540,7 @@
                     <div class="flex items-center justify-center w-8 shrink-0">${medal}</div>
                     <div class="flex-1">
                         <div class="flex justify-between items-end mb-2">
-                            <span class="font-black text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
+                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
                             <span class="font-black text-sm text-slate-800 dark:text-white">${rep.avg} Bal</span>
                         </div>
                         <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
@@ -575,15 +576,33 @@
         }
 
         function updateCharts(filtered, allVisits) {
-            // 2. Radar Chart
-            const ctxRadar = document.getElementById('radarChart').getContext('2d');
-            const radarData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; // Sadələşdirmək üçün son yoxlanış götürülür
-            if(radarChart) radarChart.destroy();
-            radarChart = new Chart(ctxRadar, {
-                type: 'radar',
-                data: { labels:['4+4','B.Beş','S.Keno','Poz-Q','Term'], datasets:[{ label: 'Son Analiz', data:radarData, backgroundColor:'rgba(59,130,246,0.2)', borderColor:'#3b82f6', pointBackgroundColor: '#3b82f6' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, ticks: { display: false } } } }
-            });
+            // 2. Dinamik Kateqoriya Zolaqları
+            const catNames = ['4+4', 'B.Beş', 'S.Keno', 'Poz-Q', 'Term'];
+            const catIcons = ['fa-dice', 'fa-star', 'fa-gem', 'fa-ticket', 'fa-desktop'];
+            const catData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; 
+            
+            const catContainer = document.getElementById('category-bars-container');
+            if(catContainer) {
+                catContainer.innerHTML = catData.map((score, idx) => {
+                    let colorClass = 'bg-blue-600';
+                    if (score >= 90) colorClass = 'bg-emerald-500';
+                    else if (score < 70) colorClass = 'bg-rose-500';
+                    else colorClass = 'bg-amber-500';
+
+                    return `
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-end">
+                            <span class="font-bold text-slate-700 dark:text-slate-300 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fa-solid ${catIcons[idx]} text-slate-400 w-4 text-center"></i> ${catNames[idx]}</span>
+                            <span class="font-black text-sm text-slate-800 dark:text-white">${score}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
+                            <div class="${colorClass} h-full rounded-full transition-all duration-1000 relative" style="width: ${score}%">
+                                <div class="shimmer-bg"></div>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
 
             // 3. Doughnut Chart (Success Distribution)
             let ela = 0, kafi = 0, zeif = 0;
