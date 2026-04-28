@@ -29,6 +29,12 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* Slot animasiyası rəqəmlər üçün */
+        .slot-scroll {
+            display: inline-block;
+            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
         body { 
             transition: background-color 0.4s, color 0.4s; 
             font-family: 'Inter', sans-serif; 
@@ -176,18 +182,29 @@
                 </header>
 
                 <div id="dashboard" class="section-content active space-y-8">
+                    
+                    <div id="auto-feedback-container" class="hidden"></div>
+                    
+                    <div class="glass-card p-6 md:p-8 border-l-4 border-indigo-500 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-black text-indigo-600 text-xs uppercase tracking-widest"><i class="fa-solid fa-seedling mr-2"></i>Orientasiya və Adaptasiya İzləmə</h3>
+                        </div>
+                        <div id="orientation-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            </div>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-blue-600 to-indigo-500 text-white shadow-blue-500/20 shadow-xl">
                             <p class="text-[10px] font-black uppercase mb-2 text-blue-100" data-i18n="stat_avg">Ortalama Bal</p>
-                            <h3 id="rep-avg-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-star bg-icon"></i>
+                            <h3 id="rep-avg-stat" class="text-3xl md:text-4xl font-black slot-scroll">0</h3><i class="fa-solid fa-star bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-emerald-500/20 shadow-xl">
                             <p class="text-[10px] font-black uppercase mb-2 text-emerald-100" data-i18n="stat_last">Ən Yüksək Bal</p>
-                            <h3 id="last-point-score" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-ranking-star bg-icon"></i>
+                            <h3 id="last-point-score" class="text-3xl md:text-4xl font-black slot-scroll">0</h3><i class="fa-solid fa-ranking-star bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-orange-500/20 shadow-xl">
                             <p class="text-[10px] font-black uppercase mb-2 text-orange-100" data-i18n="stat_count">Ziyarət Sayı</p>
-                            <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-clipboard-check bg-icon"></i>
+                            <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black slot-scroll">0</h3><i class="fa-solid fa-clipboard-check bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-rose-500/20 shadow-xl">
                             <p class="text-[10px] font-black uppercase mb-2 text-rose-100" data-i18n="stat_trend">Təlim Mərkəzi</p>
@@ -199,25 +216,12 @@
                         <div class="lg:col-span-2 glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi</span></h3>
                             <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
-                                <div class="animate-pulse flex items-center gap-4 py-3 px-2 rounded-xl bg-slate-50 dark:bg-slate-800/30">
-                                    <div class="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0"></div>
-                                    <div class="w-9 h-9 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0"></div>
-                                    <div class="flex-1 space-y-2"><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div><div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-full"></div></div>
                                 </div>
-                                <div class="animate-pulse flex items-center gap-4 py-3 px-2 rounded-xl">
-                                    <div class="w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0"></div>
-                                    <div class="w-9 h-9 bg-slate-200 dark:bg-slate-700 rounded-full shrink-0"></div>
-                                    <div class="flex-1 space-y-2"><div class="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div><div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-4/5"></div></div>
-                                </div>
-                            </div>
                         </div>
                         <div class="glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-bullseye mr-2"></i><span data-i18n="dash_cat_balance">Kateqoriya Balansı</span></h3>
                             <div id="category-bars-container" class="flex-1 flex flex-col justify-evenly">
-                                <div class="animate-pulse space-y-2"><div class="h-3 w-1/4 bg-slate-200 dark:bg-slate-700 rounded"></div><div class="h-2 w-full bg-slate-200 dark:bg-slate-700 rounded-full"></div></div>
-                                <div class="animate-pulse space-y-2"><div class="h-3 w-1/3 bg-slate-200 dark:bg-slate-700 rounded"></div><div class="h-2 w-3/4 bg-slate-200 dark:bg-slate-700 rounded-full"></div></div>
-                                <div class="animate-pulse space-y-2"><div class="h-3 w-1/4 bg-slate-200 dark:bg-slate-700 rounded"></div><div class="h-2 w-5/6 bg-slate-200 dark:bg-slate-700 rounded-full"></div></div>
-                            </div>
+                                </div>
                         </div>
                     </div>
 
@@ -242,15 +246,7 @@
                                 <span class="text-[9px] bg-blue-100 dark:bg-blue-900/40 text-blue-600 px-2 py-1 rounded-lg font-bold" id="feed-count">0 Əməliyyat</span>
                             </h3>
                             <div id="activity-feed" class="flex-1 overflow-y-auto space-y-4 pr-2 feed-scroll">
-                                <div class="animate-pulse flex gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/30 border border-transparent">
-                                    <div class="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0"></div>
-                                    <div class="flex-1 space-y-2"><div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div><div class="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg mt-2"></div></div>
                                 </div>
-                                <div class="animate-pulse flex gap-3 p-4 rounded-2xl border border-transparent">
-                                    <div class="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 shrink-0"></div>
-                                    <div class="flex-1 space-y-2"><div class="h-2 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div><div class="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded-lg mt-2"></div></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -398,6 +394,16 @@
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
 
+        // Oflayn sinxronizasiya üçün dinləyici
+        window.addEventListener('online', () => {
+            let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
+            if(offlineData.length > 0) {
+                alert("İnternet bağlantısı bərpa olundu. Oflayn məlumatlar bazaya sinxronizasiya edilir...");
+                offlineData.forEach(v => db.ref('visits').push(v));
+                localStorage.removeItem('azl_offline_visits');
+            }
+        });
+
         const formSchema = [
             { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
             { cat: "BeşdəBeş", q: ["BeşdəBeş oyunu nə zaman və harada keçirilir?", "BeşdəBeş oyununda necə iştirak etmək olar?", "BeşdəBeş oyununda böyük uduş nə qədərdir?", "BeşdəBeş oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
@@ -530,6 +536,7 @@
             applyTrans();
         }
 
+        // Slot animasiyası əlavə edildi
         function animateValue(id, start, end, duration) {
             let obj = document.getElementById(id);
             if (!obj) return;
@@ -537,10 +544,15 @@
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                // Rəqəmlər yenilənərkən slot effekti
+                obj.style.transform = `translateY(${Math.sin(progress * Math.PI) * -5}px)`;
                 obj.innerHTML = Math.floor(progress * (end - start) + start);
+                
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
                 } else {
+                    obj.style.transform = 'translateY(0)';
                     obj.innerHTML = end; 
                 }
             };
@@ -592,28 +604,45 @@
             }).join('');
         }
 
+        // İnkişaf dinamikası və Ən Çox İnkişaf Edən məntiqi Liderlər cədvəlində
         function renderLeaderboard() {
             const listContainer = document.getElementById('leaderboard-list');
             if(!listContainer) return;
             
-            const repAverages = [];
+            const repStats = [];
+            let bestImprover = null;
+            let maxDelta = 0;
+
             for (const rep in database) {
-                const visits = database[rep];
+                const visits = [...database[rep]].sort((a,b) => a.timestamp - b.timestamp);
                 const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
-                repAverages.push({ name: rep, avg: Math.round(avg), count: visits.length });
+                
+                // İnkişaf fərqini tap (Son nəticə - əvvəlki ortalama)
+                let delta = 0;
+                if(visits.length > 1) {
+                    const latest = visits[visits.length - 1].score;
+                    const prevVisits = visits.slice(0, visits.length - 1);
+                    const prevAvg = prevVisits.reduce((s,v)=>s+v.score,0)/prevVisits.length;
+                    delta = latest - prevAvg;
+                    if(delta > maxDelta && delta > 5) { // ən az 5 bal inkişaf varsa
+                        maxDelta = delta;
+                        bestImprover = rep;
+                    }
+                }
+
+                repStats.push({ name: rep, avg: Math.round(avg), count: visits.length, delta: delta });
             }
             
-            repAverages.sort((a, b) => b.avg - a.avg);
+            repStats.sort((a, b) => b.avg - a.avg);
 
-            if (repAverages.length === 0) {
+            if (repStats.length === 0) {
                 listContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Heç bir məlumat yoxdur.</p>`;
                 return;
             }
 
-            listContainer.innerHTML = repAverages.map((rep, index) => {
+            listContainer.innerHTML = repStats.map((rep, index) => {
                 let medal = '';
                 let avatarStyle = '';
-                
                 let initials = rep.name.split(' ').map(w => w.charAt(0)).join('').toUpperCase().substring(0, 2);
 
                 if (index === 0) {
@@ -635,13 +664,16 @@
                 else if (rep.avg < 70) colorClass = 'bg-rose-500';
                 else colorClass = 'bg-amber-500';
 
+                // Ən çox inkişaf edən üçün ulduz/ox ikonu
+                let improverBadge = (rep.name === bestImprover) ? `<span title="Ən çox inkişaf edən" class="text-emerald-500 ml-1"><i class="fa-solid fa-arrow-trend-up"></i></span>` : '';
+
                 return `
                 <div class="flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-white dark:hover:bg-slate-800/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group">
                     <div class="flex items-center justify-center w-8 shrink-0">${medal}</div>
                     <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-[10px] shrink-0 border-2 ${avatarStyle} transition-transform group-hover:scale-110">${initials}</div>
                     <div class="flex-1">
                         <div class="flex justify-between items-end mb-2">
-                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
+                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} ${improverBadge} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
                             <span class="font-black text-sm text-slate-800 dark:text-white">${rep.avg} Bal</span>
                         </div>
                         <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
@@ -652,6 +684,67 @@
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        // Avtomatik zəif nöqtələrin təyini
+        function checkWeakPoints(visits, repName) {
+            const container = document.getElementById('auto-feedback-container');
+            if(!repName || visits.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            const recent = visits.slice(0, 2);
+            let weakCats = new Set();
+            const catNames = ['4+4', 'B.Beş', 'S.Keno', 'Poz-Q', 'Term'];
+            
+            recent.forEach(v => {
+                if(v.catData) {
+                    v.catData.forEach((score, i) => {
+                        // Əgər həmin qrup üzrə mümkün maksimum (məs: 100) deyilsə və zəif nəticə (<70 bal) göstəribsə
+                        // Qeyd: form-da 1-5 suallar hərəsi 10x-lə vurulur. Biz 50-dən aşağıları "zəif" kimi qeyd edək.
+                        if(score < 50) weakCats.add(catNames[i]); 
+                    });
+                }
+            });
+
+            if(weakCats.size > 0) {
+                 container.innerHTML = `<div class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 px-5 py-4 rounded-2xl flex items-center gap-4 font-bold text-xs shadow-sm"><i class="fa-solid fa-triangle-exclamation text-rose-500 text-2xl animate-pulse"></i> <div><p class="text-[10px] text-rose-500 uppercase tracking-widest mb-1">Avtomatik Analiz / Fokuslanmalı:</p>${repName} üçün təlim ehtiyacı olan sahələr: <span class="bg-white dark:bg-rose-900/50 px-2 py-0.5 rounded text-rose-600">${Array.from(weakCats).join(', ')}</span></div></div>`;
+                 container.classList.remove('hidden');
+            } else {
+                 container.classList.add('hidden');
+            }
+        }
+
+        // Orientasiya İzləmə funksiyası
+        function updateOrientationModule(allVisits) {
+            const orientContainer = document.getElementById('orientation-list');
+            if(!orientContainer) return;
+            
+            // Sadə mock orientasiya məntiqi: Az yoxlanışı olan nümayəndələri yeni hesab edirik
+            let html = "";
+            for (const rep in database) {
+                const count = database[rep].length;
+                if(count <= 3) { // 3 gündən/ziyarətdən azdırsa Orientasiya mərhələsindədir
+                    let day = count === 0 ? 0 : count;
+                    let prog = (day / 3) * 100;
+                    html += `
+                    <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-bold text-xs text-slate-700 dark:text-slate-300"><i class="fa-solid fa-user-clock mr-1 text-indigo-500"></i> ${rep}</span>
+                            <span class="text-[10px] font-black bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 px-2 py-1 rounded-lg">Gün ${day}/3</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 shadow-inner overflow-hidden">
+                            <div class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: ${prog}%"></div>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            if(html === "") {
+                html = `<div class="col-span-1 md:col-span-2 text-center text-xs text-slate-400 italic">Hal-hazırda orientasiya dövründə olan yeni nümayəndə yoxdur.</div>`;
+            }
+            orientContainer.innerHTML = html;
         }
 
         function updateDashboard() {
@@ -666,6 +759,11 @@
             animateValue('rep-avg-stat', 0, avg, 1000);
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
+
+            // Avto feedback işə salınır
+            checkWeakPoints(filtered, selectedRep);
+            // Orientasiya modulu
+            updateOrientationModule(allVisits);
 
             renderLeaderboard();
             updateCharts(filtered, allVisits);
@@ -1041,6 +1139,7 @@
             document.getElementById('dynamic-questions').innerHTML = h;
         }
 
+        // Offline rejim dəstəyi ilə "Saxla və Bitir"
         function processAndSave() {
             const code = document.getElementById('point-code-input').value.trim();
             if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
@@ -1111,6 +1210,21 @@
                 coords: currentCoords || "", // Əgər null-dursa empty string göndəririk xəta çıxmasın
                 details: detailedAnswers 
             };
+
+            // Offline Check (Oflayn rejim əlavəsi)
+            if (!navigator.onLine) {
+                let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
+                offlineData.push(visit);
+                localStorage.setItem('azl_offline_visits', JSON.stringify(offlineData));
+                
+                alert(`Oflayn Rejim! Məlumatlar cihazda yadda saxlanıldı (Nəticə: ${finalScore} Bal). İnternet bağlantısı bərpa olunduqda sistemə sinxronizasiya ediləcək.`);
+                showSection('dashboard');
+                
+                document.getElementById('point-code-input').value = '';
+                document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
+                document.querySelectorAll('textarea').forEach(el => el.value = '');
+                return;
+            }
 
             db.ref('visits').push(visit).then(() => {
                 alert(`Məlumatlar yadda saxlanıldı! Yekun Nəticə: ${finalScore} Bal`);
