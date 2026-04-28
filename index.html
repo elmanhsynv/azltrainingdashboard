@@ -577,7 +577,7 @@
 
         function updateCharts(filtered, allVisits) {
             // 2. Dinamik Kateqoriya Zolaqları
-            const catNames = ['4+4', 'BeşdəBeş', 'Super Keno', 'Poz-Qazan', 'Terminal'];
+            const catNames = ['4+4', 'B.Beş', 'S.Keno', 'Poz-Q', 'Term'];
             const catIcons = ['fa-dice', 'fa-star', 'fa-gem', 'fa-ticket', 'fa-desktop'];
             const catData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; 
             
@@ -682,7 +682,11 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
-            toggleSidebar(); 
+            
+            // YALNIZ menyu (sidebar) açıqdırsa onu bağla. 
+            if(document.getElementById('sidebar').classList.contains('open')) {
+                toggleSidebar(); 
+            }
             
             if(id === 'ziyaretler') {
                 setTimeout(() => {
