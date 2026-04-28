@@ -41,6 +41,11 @@
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(26px); }
 
+        /* Checklist Styles */
+        .check-btn { width: 44px; height: 44px; border-radius: 12px; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; transition: 0.3s; color: #cbd5e1; }
+        .check-btn.active-y { background: #dcfce7; border-color: #4ade80; color: #166534; }
+        .check-btn.active-x { background: #fee2e2; border-color: #f87171; color: #991b1b; }
+
         /* Mobil Menu Styles Fix */
         #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; backdrop-filter: blur(4px); }
         aside { transition: transform 0.3s ease-in-out; }
@@ -50,7 +55,7 @@
             #mobile-overlay.open { display: block; }
             .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 70px; display: flex; align-items: center; padding: 0 24px; }
             .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
-            main { padding-top: 85px !important; }
+            main { padding-top: 100px !important; }
         }
     </style>
 </head>
@@ -491,6 +496,22 @@
         }
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
+
+        function handleCheck(btn, type) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => b.classList.remove('active-y', 'active-x'));
+            btn.classList.add(type === 'y' ? 'active-y' : 'active-x');
+        }
+
+        function setNoteValue(textareaId, value, status) {
+            const txt = document.getElementById(textareaId);
+            txt.value = value;
+            const parent = txt.parentElement;
+            parent.querySelectorAll('.note-btn').forEach(b => b.classList.remove('active-y', 'active-x'));
+            if(status === 'y') parent.querySelector('.btn-good').classList.add('active-y');
+            else parent.querySelector('.btn-bad').classList.add('active-x');
+        }
+
         function renderForm() {
             const schema = [
                 { cat: "4+4", q: ["4+4 oyunu nəzaman və harda kecirilir?", "4+4 oyununda necə iştirak etmək olar?", "4+4 oyununda güncəl cekpot nə qədərdir?", "4+4 oyununda minimum uduş nə qədərdir?"] },
@@ -498,11 +519,11 @@
                 { cat: "Super Keno", q: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
                 { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", q: ["Poz-qazan məhsullarının (qiymətləri ilə) tanıyırmı?", "Poz-qazan məhsullarını validasiya edirmi / edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında bilirmi?"] },
                 { cat: "Terminal istifadəsi", q: ["Terminal giriş/çıxış və keçidləri haqqında bilirmi?", "Tirajlı lotereyaların terminal üzrə funksiyalarını bilirmi?", "Ləğv/Yoxla/ Skan et funksiyalarını bilirmi?", "Hesabatları bilirmi?"] },
-                { cat: "Müştəri ilə ünsiyyət", hasNote: true },
-                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true },
-                { cat: "Partnyorun xarici görünüşü", hasNote: true },
-                { cat: "Terminal aktivliyi", hasNote: true },
-                { cat: "Təklif etmə", hasNote: true }
+                { cat: "Müştəri ilə ünsiyyət", hasNote: true, id: "n1" },
+                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true, id: "n2" },
+                { cat: "Partnyorun xarici görünüşü", hasNote: true, id: "n3" },
+                { cat: "Terminal aktivliyi", hasNote: true, id: "n4" },
+                { cat: "Təklif etmə", hasNote: true, id: "n5" }
             ];
             
             let h = "";
@@ -510,11 +531,25 @@
                 h += `<div class="glass-card p-6 md:p-8"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
                 if(group.q) {
                     group.q.forEach(q => {
-                        h += `<div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5"><p class="font-bold text-xs pr-4">${q}</p><div class="flex gap-2 shrink-0"><button onclick="this.className='w-10 h-10 rounded-lg bg-green-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">Y</button><button onclick="this.className='w-10 h-10 rounded-lg bg-red-500 text-white'" class="w-10 h-10 border rounded-lg hover:bg-slate-50 transition-colors">X</button></div></div>`;
+                        h += `
+                        <div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5">
+                            <p class="font-bold text-xs pr-4">${q}</p>
+                            <div class="flex gap-2 shrink-0">
+                                <button onclick="handleCheck(this, 'y')" class="check-btn"><i class="fa-solid fa-check"></i></button>
+                                <button onclick="handleCheck(this, 'x')" class="check-btn"><i class="fa-solid fa-times"></i></button>
+                            </div>
+                        </div>`;
                     });
                 }
                 if(group.hasNote) {
-                    h += `<textarea placeholder="Qeyd yerini daxil edin..." class="w-full mt-4 p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 outline-none text-xs font-bold transition-all min-h-[100px]"></textarea>`;
+                    h += `
+                    <div class="space-y-4">
+                        <div class="flex gap-2">
+                            <button onclick="setNoteValue('${group.id}', 'Yaxşıdır', 'y')" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">Yaxşıdır</button>
+                            <button onclick="setNoteValue('${group.id}', 'Pisdir', 'x')" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">Pisdir</button>
+                        </div>
+                        <textarea id="${group.id}" placeholder="Əlavə qeyd (vacib deyil)..." class="w-full p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 outline-none text-xs font-bold transition-all min-h-[80px]"></textarea>
+                    </div>`;
                 }
                 h += `</div>`;
             });
@@ -524,7 +559,10 @@
         function processAndSave() {
             const code = document.getElementById('point-code-input').value;
             const rep = currentUser.fullName || currentUser.name || "Anonim";
+            
+            // Sadə bal hesablama məntiqi (nümunə üçün 85 qoyulub, real sistemdə seçimlərə görə dinamikləşə bilər)
             const visit = { rep, code, score: 85, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), catData: [80, 75, 90, 85, 70], coords: currentCoords };
+            
             db.ref('visits').push(visit).then(() => {
                 alert("Məlumatlar yadda saxlanıldı!");
                 showSection('dashboard');
