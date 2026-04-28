@@ -11,6 +11,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -317,9 +319,9 @@
                             </div>
 
                             <div class="glass-card p-6 md:p-8 hover:shadow-lg transition-all">
-                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-file-export mr-2"></i><span data-i18n="rep_selection">Hesabat Çıxarma (CSV)</span></h4>
+                                <h4 class="font-black text-blue-600 mb-6 uppercase text-[10px]"><i class="fa-solid fa-file-export mr-2"></i><span data-i18n="rep_selection">Hesabat Çıxarma (PDF)</span></h4>
                                 <select id="report-rep-selector" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs mb-4 outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
-                                    <option value="">Nümayəndə seçin</option>
+                                    <option value="">Bütün nümayəndələr</option>
                                     <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
                                     <option value="Anar Babayev">Anar Babayev</option>
                                     <option value="Emil Hüseynov">Emil Hüseynov</option>
@@ -411,16 +413,16 @@
 
         const trans = {
             az: { 
-                nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (CSV)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
+                nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" 
             },
             tr: { 
-                nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (CSV)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
+                nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" 
             },
             en: { 
-                nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (CSV)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
+                nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" 
             },
             ru: { 
-                nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (CSV)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
+                nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг представителей", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Назначенный представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" 
             }
         };
 
@@ -915,16 +917,80 @@
 
         function downloadReport() {
             const rep = document.getElementById('report-rep-selector').value;
-            if(!rep) return alert("Nümayəndə seçin!");
-            const data = database[rep] || [];
+            const data = rep ? allVisitsGlobal.filter(v => v.rep === rep) : allVisitsGlobal;
+            
             if(data.length === 0) return alert("Məlumat tapılmadı!");
-            const csvContent = "data:text/csv;charset=utf-8,Kod,Nümayəndə,Təlimçi,Bal,Tarix\n" + data.map(e => `${e.code},${e.rep},${e.trainer || 'Anonim'},${e.score},${e.date}`).join("\n");
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Report_${rep.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
+
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '20px';
+            tempDiv.style.fontFamily = 'Inter, sans-serif';
+            tempDiv.style.color = '#1e293b';
+            
+            const title = rep ? `${rep} - Performans Hesabatı` : `Bütün Nümayəndələr - Performans Hesabatı`;
+            const avgScore = Math.round(data.reduce((sum, item) => sum + item.score, 0) / data.length);
+            
+            let tableHTML = `
+                <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h1 style="color: #3b82f6; margin: 0; font-size: 24px; font-weight: 800;">AZL TRAINING</h1>
+                    <h2 style="margin: 5px 0 0 0; font-size: 16px; color: #64748b;">${title}</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Çıxarış tarixi: ${new Date().toLocaleDateString('az-AZ')} ${new Date().toLocaleTimeString('az-AZ')}</p>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                    <div><strong>Ümumi Ziyarət:</strong> ${data.length}</div>
+                    <div><strong>Ortalama Bal:</strong> ${avgScore}</div>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                    <thead>
+                        <tr style="background-color: #3b82f6; color: white;">
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Tarix</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Nümayəndə</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Satış Nöqtəsi</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Təlimçi</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">Bal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.sort((a, b) => b.timestamp - a.timestamp).forEach((item, index) => {
+                const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                const scoreColor = item.score >= 80 ? '#10b981' : (item.score >= 60 ? '#f59e0b' : '#f43f5e');
+                tableHTML += `
+                    <tr style="background-color: ${bg};">
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.date}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${item.rep}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.code}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.trainer || 'Anonim'}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: ${scoreColor}">${item.score}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `</tbody></table>`;
+            tempDiv.innerHTML = tableHTML;
+            
+            const opt = {
+                margin:       10,
+                filename:     `AZL_Hesabat_${rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            const btn = document.querySelector('button[onclick="downloadReport()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Hazırlanır...`;
+            btn.disabled = true;
+
+            html2pdf().from(tempDiv).set(opt).save().then(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error(err);
+                alert("PDF yaradılarkən xəta baş verdi.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
         }
 
         function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
