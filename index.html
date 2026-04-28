@@ -46,17 +46,23 @@
         .check-btn.active-y { background: #dcfce7; border-color: #4ade80; color: #166534; }
         .check-btn.active-x { background: #fee2e2; border-color: #f87171; color: #991b1b; }
 
-        /* Mobil Menu Styles Fix */
+        /* Sidebar & Menu Fixes */
         #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; backdrop-filter: blur(4px); }
-        aside { transition: transform 0.3s ease-in-out; }
-        @media (max-width: 768px) {
-            aside { position: fixed; transform: translateX(-100%); z-index: 9999; height: 100vh; width: 280px; }
-            aside.open { transform: translateX(0); }
-            #mobile-overlay.open { display: block; }
-            .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 70px; display: flex; align-items: center; padding: 0 24px; }
-            .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
-            main { padding-top: 100px !important; }
+        aside { position: fixed; transform: translateX(-100%); z-index: 9999; height: 100vh; width: 280px; transition: transform 0.3s ease-in-out; }
+        aside.open { transform: translateX(0); }
+        #mobile-overlay.open { display: block; }
+        
+        .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 70px; display: flex; align-items: center; padding: 0 24px; }
+        .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
+
+        /* Laptop version fix */
+        @media (min-width: 769px) {
+            main { margin-left: 0; transition: 0.3s; }
+            .mobile-header { display: flex !important; } /* Show header for laptop too */
         }
+        
+        main { padding-top: 100px !important; }
+        .dashboard-header-fix { margin-top: 20px; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden flex-col md:flex-row">
@@ -95,7 +101,7 @@
                     <span class="font-black text-2xl text-blue-600">AZL</span>
                     <span class="font-medium text-2xl dark:text-white ml-1">Training</span>
                 </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleSidebar()" class="text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <nav class="flex flex-col w-full gap-1 flex-1">
                 <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="nav_home">Dashboard</span></button>
@@ -109,12 +115,12 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto relative">
-            <div class="md:hidden mobile-header">
+            <div class="mobile-header">
                 <button onclick="toggleSidebar()" class="text-blue-600 text-2xl mr-4"><i class="fa-solid fa-bars"></i></button>
                 <span class="font-black text-xl text-blue-600">AZL <span class="text-slate-800 dark:text-white font-medium">Training</span></span>
             </div>
 
-            <div class="p-6 md:p-10 max-w-7xl mx-auto">
+            <div class="p-6 md:p-10 max-w-7xl mx-auto dashboard-header-fix">
                 <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
                     <div>
                         <h1 id="page-title" data-i18n="dash_title" class="text-2xl md:text-3xl font-black dark:text-white uppercase text-blue-600 tracking-tighter">PERFORMANS ANALİZİ</h1>
@@ -412,7 +418,7 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
-            if(window.innerWidth < 768) toggleSidebar();
+            toggleSidebar(); // Close sidebar after selecting
             if(id === 'ziyaretler') setTimeout(initMap, 400);
         }
 
@@ -519,11 +525,11 @@
                 { cat: "Super Keno", q: ["Super Keno oyunu nə zaman və harada keçirilir?", "Super Keno oyununda necə iştirak etmək olar?", "Super Keno oyununda böyük uduş nə qədərdir?", "Super Keno oyununda minimum uduş nə qədərdir və uyğunluq necə olmalıdır?"] },
                 { cat: "Ekspres Keno / Poz-qazan / 1001 Sevinc", q: ["Poz-qazan məhsullarının (qiymətləri ilə) tanıyırmı?", "Poz-qazan məhsullarını validasiya edirmi / edə bilirmi?", "Ekspres Keno oyununda necə iştirak etmək olar?", "1001 Sevinc haqqında bilirmi?"] },
                 { cat: "Terminal istifadəsi", q: ["Terminal giriş/çıxış və keçidləri haqqında bilirmi?", "Tirajlı lotereyaların terminal üzrə funksiyalarını bilirmi?", "Ləğv/Yoxla/ Skan et funksiyalarını bilirmi?", "Hesabatları bilirmi?"] },
-                { cat: "Müştəri ilə ünsiyyət", hasNote: true, id: "n1" },
-                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true, id: "n2" },
-                { cat: "Partnyorun xarici görünüşü", hasNote: true, id: "n3" },
-                { cat: "Terminal aktivliyi", hasNote: true, id: "n4" },
-                { cat: "Təklif etmə", hasNote: true, id: "n5" }
+                { cat: "Müştəri ilə ünsiyyət", hasNote: true, id: "n1", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+                { cat: "Satış nöqtəsinin vizual görünüşü", hasNote: true, id: "n2", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+                { cat: "Partnyorun xarici görünüşü", hasNote: true, id: "n3", goodLabel: "Yaxşıdır", badLabel: "Pisdir" },
+                { cat: "Terminal aktivliyi", hasNote: true, id: "n4", goodLabel: "Aktivdir", badLabel: "Aktiv deyil" },
+                { cat: "Təklif etmə", hasNote: true, id: "n5", goodLabel: "Yaxşıdır", badLabel: "Pisdir" }
             ];
             
             let h = "";
@@ -545,8 +551,8 @@
                     h += `
                     <div class="space-y-4">
                         <div class="flex gap-2">
-                            <button onclick="setNoteValue('${group.id}', 'Yaxşıdır', 'y')" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">Yaxşıdır</button>
-                            <button onclick="setNoteValue('${group.id}', 'Pisdir', 'x')" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">Pisdir</button>
+                            <button onclick="setNoteValue('${group.id}', '${group.goodLabel}', 'y')" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.goodLabel}</button>
+                            <button onclick="setNoteValue('${group.id}', '${group.badLabel}', 'x')" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn">${group.badLabel}</button>
                         </div>
                         <textarea id="${group.id}" placeholder="Əlavə qeyd (vacib deyil)..." class="w-full p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 outline-none text-xs font-bold transition-all min-h-[80px]"></textarea>
                     </div>`;
@@ -559,10 +565,7 @@
         function processAndSave() {
             const code = document.getElementById('point-code-input').value;
             const rep = currentUser.fullName || currentUser.name || "Anonim";
-            
-            // Sadə bal hesablama məntiqi (nümunə üçün 85 qoyulub, real sistemdə seçimlərə görə dinamikləşə bilər)
             const visit = { rep, code, score: 85, date: new Date().toLocaleDateString('az-AZ'), timestamp: Date.now(), catData: [80, 75, 90, 85, 70], coords: currentCoords };
-            
             db.ref('visits').push(visit).then(() => {
                 alert("Məlumatlar yadda saxlanıldı!");
                 showSection('dashboard');
