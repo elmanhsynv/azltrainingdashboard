@@ -2,7 +2,7 @@
 <html lang="az" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AZL Training Dashboard 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -41,13 +41,16 @@
         input:checked + .slider { background-color: #3b82f6; }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* Mobil Menu Styles */
-        #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40; backdrop-filter: blur(4px); }
+        /* Mobil Menu Styles Fix */
+        #mobile-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; backdrop-filter: blur(4px); }
         aside { transition: transform 0.3s ease-in-out; }
         @media (max-width: 768px) {
-            aside { position: fixed; transform: translateX(-100%); z-index: 50; height: 100vh; }
+            aside { position: fixed; transform: translateX(-100%); z-index: 9999; height: 100vh; width: 280px; }
             aside.open { transform: translateX(0); }
             #mobile-overlay.open { display: block; }
+            .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 70px; display: flex; align-items: center; padding: 0 24px; }
+            .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
+            main { padding-top: 85px !important; }
         }
     </style>
 </head>
@@ -101,7 +104,7 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto relative">
-            <div class="md:hidden flex items-center p-6 bg-white dark:bg-[#020617] border-b border-slate-200 dark:border-white/5 sticky top-0 z-30">
+            <div class="md:hidden mobile-header">
                 <button onclick="toggleSidebar()" class="text-blue-600 text-2xl mr-4"><i class="fa-solid fa-bars"></i></button>
                 <span class="font-black text-xl text-blue-600">AZL <span class="text-slate-800 dark:text-white font-medium">Training</span></span>
             </div>
@@ -266,7 +269,7 @@
         let reportType = 'daily';
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
+            az: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Trend", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Yadda Saxla", lang_selection: "Dil Seçimləri", internal_report: "Hesabatlar", rep_selection: "Hesabat Çıxarma", all_reps: "Bütün Nümayəndələr" },
             tr: { nav_home: "Panel", nav_checklist: "Kontrol Listesi", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğilim", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "Raporlar", rep_selection: "Rapor Al", all_reps: "Tüm Temsilciler" },
             en: { nav_home: "Dashboard", nav_checklist: "Checklist", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Trend", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Languages", internal_report: "Reports", rep_selection: "Get Report", all_reps: "All Reps" },
             ru: { nav_home: "Панель", nav_checklist: "Чек-лист", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Тренд", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Отчеты", rep_selection: "Извлечь отчет", all_reps: "Все сотрудники" }
