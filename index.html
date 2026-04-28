@@ -239,20 +239,33 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i><span data-i18n="dash_dist">Nəticə Bölgüsü</span></h3>
-                            <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
+                    <div class="flex gap-2 mb-2 bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-2xl w-fit">
+                        <button onclick="switchDashTab('charts')" id="tab-charts" class="px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all bg-white dark:bg-slate-700 text-blue-600 shadow-sm"><i class="fa-solid fa-chart-line mr-2"></i>Analitika (Qrafiklər)</button>
+                        <button onclick="switchDashTab('feed')" id="tab-feed" class="px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-bolt mr-2"></i><span data-i18n="dash_feed">Canlı Fəaliyyət</span></button>
+                    </div>
+
+                    <div id="dash-charts-content" class="space-y-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300 relative group">
+                                <button onclick="openChartModal('doughnutChart')" class="absolute top-4 right-4 bg-white dark:bg-slate-800 shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
+                                <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-chart-pie mr-2"></i><span data-i18n="dash_dist">Nəticə Bölgüsü</span></h3>
+                                <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
+                            </div>
+                            <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300 relative group">
+                                <button onclick="openChartModal('trendChart')" class="absolute top-4 right-4 bg-white dark:bg-slate-800 shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
+                                <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası</span></h3>
+                                <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
+                            </div>
                         </div>
-                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası</span></h3>
-                            <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
-                        </div>
-                        <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest" title="Bilik Səviyyəsi vs Simulyasiya Edilmiş Satış Həcmi"><i class="fa-solid fa-chart-scatter mr-2"></i>Bilik-Satış Kəsişməsi</h3>
+                        <div class="glass-card p-4 md:p-8 h-[400px] flex flex-col hover:shadow-lg transition-shadow duration-300 relative group">
+                            <button onclick="openChartModal('scatterChart')" class="absolute top-4 right-4 bg-white dark:bg-slate-800 shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest" title="Bilik Səviyyəsi vs Simulyasiya Edilmiş Satış Həcmi"><i class="fa-solid fa-chart-scatter mr-2"></i>Bilik-Satış Kəsişməsi (Tam Genişlik)</h3>
                             <div class="flex-1 relative"><canvas id="scatterChart"></canvas></div>
                         </div>
-                        <div class="glass-card p-6 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300">
+                    </div>
+
+                    <div id="dash-feed-content" class="hidden">
+                        <div class="glass-card p-6 md:p-8 h-[600px] flex flex-col hover:shadow-lg transition-shadow duration-300">
                             <h3 class="font-black text-blue-600 text-xs uppercase mb-4 tracking-widest flex items-center justify-between">
                                 <span class="flex items-center">
                                     <span class="relative flex h-2.5 w-2.5 mr-2">
@@ -267,6 +280,7 @@
                                 </div>
                         </div>
                     </div>
+
                 </div>
 
                 <div id="checklist" class="section-content">
@@ -387,6 +401,20 @@
                 <button onclick="closeVisitDetails()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 space-y-6" id="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <div id="chart-modal" class="hidden fixed inset-0 z-[10000] bg-slate-900/90 backdrop-blur-sm flex justify-center items-center p-4 md:p-10 transition-all">
+        <div class="bg-white dark:bg-slate-900 w-full h-full max-w-6xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col relative overflow-hidden">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-black text-blue-600 text-lg uppercase tracking-wider" id="expanded-chart-title">Detallı Qrafik</h3>
+                <button onclick="closeChartModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 md:p-8 flex-1 relative flex flex-col">
+                <div class="flex-1 relative w-full h-full flex items-center justify-center" id="expanded-chart-container">
+                    <canvas id="expandedCanvas"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -611,7 +639,6 @@
             }).join('');
         }
 
-        // Təsir İndeksi (Impact Delta) əlavə olundu
         function renderLeaderboard() {
             const listContainer = document.getElementById('leaderboard-list');
             if(!listContainer) return;
@@ -633,7 +660,6 @@
                 repStats.push({ name: rep, avg: Math.round(avg), count: visits.length, delta: delta });
             }
             
-            // Delta ilə birlikdə ortalamaya görə sıralama
             repStats.sort((a, b) => b.avg - a.avg);
 
             if (repStats.length === 0) {
@@ -665,7 +691,6 @@
                 else if (rep.avg < 70) colorClass = 'bg-rose-500';
                 else colorClass = 'bg-amber-500';
 
-                // Təsir İndeksi Vizualı (Impact Delta)
                 let deltaDisplay = '';
                 if(rep.delta > 0) {
                     deltaDisplay = `<span title="Təlimdən sonrakı inkişaf sıçrayışı" class="text-[10px] text-emerald-500 font-black ml-2 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up"></i> ${rep.delta.toFixed(1)} Bal</span>`;
@@ -692,7 +717,6 @@
             }).join('');
         }
 
-        // YENİ: Sistemik Boşluqlar (Ən çox səhv edilən mikro-suallar)
         function renderSystemicGaps(filtered) {
             const list = document.getElementById('systemic-gaps-list');
             if(!list) return;
@@ -730,7 +754,6 @@
             `).join('');
         }
 
-        // YENİ: Biliyin Unudulma Əyrisi (Riskli Nöqtələr)
         function renderDecayRisk(allVisits) {
             const list = document.getElementById('decay-risk-list');
             if(!list) return;
@@ -738,7 +761,6 @@
             const now = Date.now();
             let latestVisits = {};
 
-            // Hər bir satış nöqtəsi üçün sonuncu ziyarət vaxtını tapırıq
             allVisits.forEach(v => {
                 if(!latestVisits[v.code] || latestVisits[v.code].timestamp < v.timestamp) {
                     latestVisits[v.code] = v;
@@ -747,10 +769,9 @@
 
             const riskyPoints = Object.values(latestVisits).filter(v => {
                 const daysSince = (now - v.timestamp) / (1000 * 60 * 60 * 24);
-                return daysSince > 30; // 30 gündən çox yoxlanılmayıbsa risk altındadır
+                return daysSince > 30; 
             });
 
-            // Mock test üçün: Əgər heç nə yoxdursa bəzilərini süni riskli göstərək ki panel boş qalmasın
             if(riskyPoints.length === 0 && allVisits.length > 0) {
                 riskyPoints.push(allVisits[allVisits.length-1]);
                 riskyPoints[0].isMockDecay = true;
@@ -850,8 +871,8 @@
             updateOrientationModule(allVisits);
 
             renderLeaderboard();
-            renderSystemicGaps(filtered); // Yeni xüsusiyyət
-            renderDecayRisk(allVisits);   // Yeni xüsusiyyət
+            renderSystemicGaps(filtered); 
+            renderDecayRisk(allVisits);   
 
             updateCharts(filtered, allVisits);
             renderHistory(filtered);
@@ -942,10 +963,7 @@
                 }
             });
 
-            // YENİ: Kəsişmə Analizi (Bilik vs Satış - Mock Data ilə Scatter Plot)
             const scatterData = filtered.map(v => {
-                // Hər yoxlanış nəticəsi (bilik səviyyəsi) üçün simulyasiya edilmiş satış həcmi yaradırıq.
-                // Reallıqda bu data birbaşa satış terminallarının arxa fonundan çəkilməlidir.
                 let simulatedSales = (v.score * 12) + (Math.random() * 400); 
                 return { x: v.score, y: simulatedSales, r: 6 };
             });
@@ -1084,7 +1102,6 @@
             }
         }
 
-        // YENİ: Heatmap Xəritə Tətbiqi
         function initMap() {
             if(map) { map.remove(); }
             map = L.map('map').setView([40.4093, 49.8671], 11);
@@ -1094,18 +1111,15 @@
             
             Object.values(database).flat().forEach(e => {
                 if(e.coords && e.coords.lat) {
-                    // Markeri göstər
                     L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code} - ${e.score} Bal`);
                     
-                    // Heatmap üçün datanı yığırıq (Aşağı bal = yüksək qırmızılıq dərəcəsi/təlimə ehtiyac var)
-                    let intensity = (100 - e.score) / 100; // Pis nəticə daha isti(qırmızı) görünəcək
-                    if(intensity > 0.3) { // 70 baldan aşağı olan yerlər heatmap-a düşsün
+                    let intensity = (100 - e.score) / 100;
+                    if(intensity > 0.3) { 
                         heatData.push([e.coords.lat, e.coords.lng, intensity]);
                     }
                 }
             });
 
-            // Heatmap layer əlavə edirik (qırmızı zonalar zəif yoxlanış nəticələrini və təlim ehtiyacını bildirir)
             if(typeof L.heatLayer !== 'undefined' && heatData.length > 0) {
                 L.heatLayer(heatData, {
                     radius: 35, 
@@ -1395,6 +1409,100 @@
                     document.getElementById('geo-btn').classList.add('bg-green-600', 'shadow-green-500/30');
                 }, () => alert("Məkan icazəsi alınmadı."));
             }
+        }
+
+        function switchDashTab(tab) {
+            document.getElementById('dash-charts-content').classList.toggle('hidden', tab !== 'charts');
+            document.getElementById('dash-feed-content').classList.toggle('hidden', tab !== 'feed');
+            
+            const tabCharts = document.getElementById('tab-charts');
+            const tabFeed = document.getElementById('tab-feed');
+            
+            if(tab === 'charts') {
+                tabCharts.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all bg-white dark:bg-slate-700 text-blue-600 shadow-sm";
+                tabFeed.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200";
+            } else {
+                tabFeed.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all bg-white dark:bg-slate-700 text-blue-600 shadow-sm";
+                tabCharts.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200";
+            }
+        }
+
+        let expandedChartInstance = null;
+        function openChartModal(chartId) {
+            document.getElementById('chart-modal').classList.remove('hidden');
+            renderExpandedChart(chartId);
+        }
+
+        function closeChartModal() {
+            document.getElementById('chart-modal').classList.add('hidden');
+            if(expandedChartInstance) expandedChartInstance.destroy();
+        }
+
+        function renderExpandedChart(chartId) {
+            const ctx = document.getElementById('expandedCanvas').getContext('2d');
+            if(expandedChartInstance) expandedChartInstance.destroy();
+
+            const selectedRep = document.getElementById('rep-selector').value;
+            const allVisits = [...allVisitsGlobal].sort((a,b) => b.timestamp - a.timestamp);
+            const filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
+
+            let type, data, options;
+
+            if(chartId === 'doughnutChart') {
+                document.getElementById('expanded-chart-title').innerText = "Nəticə Bölgüsü (Əla / Kafi / Zəif)";
+                let ela = 0, kafi = 0, zeif = 0;
+                filtered.forEach(v => {
+                    if(v.score >= 90) ela++;
+                    else if(v.score >= 70) kafi++;
+                    else zeif++;
+                });
+                type = 'doughnut';
+                data = {
+                    labels: ['Əla (90+)', 'Kafi (70-89)', 'Zəif (<70)'],
+                    datasets: [{ data: [ela, kafi, zeif], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0, hoverOffset: 8 }]
+                };
+                options = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, font: { size: 14 } } } } };
+            } else if(chartId === 'trendChart') {
+                document.getElementById('expanded-chart-title').innerText = "İnkişaf Dinamikası";
+                const chronological = [...filtered].reverse();
+                const trendDates = [], trendScores = [];
+                chronological.slice(-20).forEach(v => { 
+                    const d = new Date(v.timestamp);
+                    trendDates.push(`${d.getDate()}/${d.getMonth()+1}`);
+                    trendScores.push(v.score);
+                });
+                type = 'line';
+                data = {
+                    labels: trendDates.length ? trendDates : ['Yoxdur'],
+                    datasets: [{ label: 'İnkişaf Balı', data: trendScores.length ? trendScores : [0], borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderWidth: 4, tension: 0.4, fill: true, pointBackgroundColor: '#8b5cf6', pointRadius: 6, pointHoverRadius: 8 }]
+                };
+                options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } };
+            } else if(chartId === 'scatterChart') {
+                document.getElementById('expanded-chart-title').innerText = "Bilik Səviyyəsi və Təxmini Satış Həcmi Kəsişməsi";
+                const scatterData = filtered.map(v => {
+                    let simulatedSales = (v.score * 12) + (Math.random() * 400);
+                    return { x: v.score, y: simulatedSales, r: 10 };
+                });
+                type = 'bubble';
+                data = { datasets: [{ label: 'Nöqtələr (Bilik vs Satış)', data: scatterData.length ? scatterData : [{x:0, y:0, r:0}], backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: '#3b82f6', borderWidth: 2 }] };
+                options = {
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { 
+                            callbacks: { 
+                                label: function(context) { return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`; } 
+                            } 
+                        } 
+                    },
+                    scales: { 
+                        x: { title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 14, weight: 'bold' } }, min: 0, max: 100 }, 
+                        y: { title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 14, weight: 'bold' } }, beginAtZero: true } 
+                    }
+                };
+            }
+
+            expandedChartInstance = new Chart(ctx, { type, data, options });
         }
 
         window.onload = () => { 
