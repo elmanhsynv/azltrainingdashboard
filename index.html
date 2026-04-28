@@ -756,9 +756,9 @@
 
                 let deltaDisplay = '';
                 if(rep.delta > 0) {
-                    deltaDisplay = `<span title="Təlimdən sonrakı inkişaf sıçrayışı" class="text-[10px] text-emerald-500 font-black ml-2 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up"></i> ${rep.delta.toFixed(1)} Bal</span>`;
+                    deltaDisplay = `<span title="Təlim dən sonrakı inkişaf sıçrayışı" class="text-[10px] text-emerald-500 font-black ml-2 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up"></i> ${rep.delta.toFixed(1)} Bal</span>`;
                 } else if (rep.delta < 0) {
-                    deltaDisplay = `<span title="Təlimdən sonrakı geriləmə" class="text-[10px] text-rose-500 font-black ml-2 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200"><i class="fa-solid fa-arrow-down"></i> ${Math.abs(rep.delta).toFixed(1)} Bal</span>`;
+                    deltaDisplay = `<span title="Təlim dən sonrakı geriləmə" class="text-[10px] text-rose-500 font-black ml-2 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200"><i class="fa-solid fa-arrow-down"></i> ${Math.abs(rep.delta).toFixed(1)} Bal</span>`;
                 }
 
                 return `
@@ -1152,7 +1152,34 @@
             setTimeout(() => document.getElementById('visit-modal').classList.add('hidden'), 300);
         }
 
+        // Checklist yoxlama və səhifədən çıxışın qarşısını alma
+        function isChecklistDirty() {
+            const currentSection = document.querySelector('.section-content.active');
+            if (currentSection && currentSection.id === 'new-checklist-form') {
+                const codeInput = document.getElementById('point-code-input').value;
+                const anyCheck = document.querySelector('.active-y, .active-x');
+                const anyText = Array.from(document.querySelectorAll('textarea')).some(t => t.value.trim() !== "");
+                return (codeInput.trim() !== "" || anyCheck !== null || anyText);
+            }
+            return false;
+        }
+
+        // Brauzer yeniləmə/bağlama üçün xəbərdarlıq (Refresh / Browser close)
+        window.addEventListener('beforeunload', function (e) {
+            if (isChecklistDirty()) {
+                e.preventDefault();
+                e.returnValue = ''; 
+            }
+        });
+
         function showSection(id) {
+            // Əgər checklist doldurulursa və başqa səhifəyə keçmək istəyirsə
+            if (isChecklistDirty() && id !== 'new-checklist-form') {
+                if (!confirm("Checklist tam doldurulmayıb. Çıxsanız məlumatlar itəcək. Davam etmək istəyirsiniz?")) {
+                    return; // Keçidi dayandır
+                }
+            }
+
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
@@ -1454,21 +1481,25 @@
                 localStorage.setItem('azl_offline_visits', JSON.stringify(offlineData));
                 
                 alert(`Oflayn Rejim! Məlumatlar cihazda yadda saxlanıldı (Nəticə: ${finalScore} Bal). İnternet bağlantısı bərpa olunduqda sistemə sinxronizasiya ediləcək.`);
-                showSection('dashboard');
                 
+                // Formu təmizlə ki isChecklistDirty false qaytarsın
                 document.getElementById('point-code-input').value = '';
                 document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
                 document.querySelectorAll('textarea').forEach(el => el.value = '');
+                
+                showSection('dashboard');
                 return;
             }
 
             db.ref('visits').push(visit).then(() => {
                 alert(`Məlumatlar yadda saxlanıldı! Yekun Nəticə: ${finalScore} Bal`);
-                showSection('dashboard');
                 
+                // Formu təmizlə ki isChecklistDirty false qaytarsın
                 document.getElementById('point-code-input').value = '';
                 document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
                 document.querySelectorAll('textarea').forEach(el => el.value = '');
+                
+                showSection('dashboard');
             }).catch(e => alert("Xəta baş verdi: " + e));
         }
 
