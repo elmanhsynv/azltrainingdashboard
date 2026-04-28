@@ -53,11 +53,18 @@
         .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 75px; display: flex; align-items: center; padding: 0 24px; }
         .dark .mobile-header { background: #020617; border-color: rgba(255,255,255,0.05); }
 
-        /* Custom Scrollbar for Feed */
+        /* Custom Scrollbar for Feed & Leaderboard */
         .feed-scroll::-webkit-scrollbar { width: 6px; }
         .feed-scroll::-webkit-scrollbar-track { background: transparent; }
         .feed-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark .feed-scroll::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Shimmer Animation for Progress Bars */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .shimmer-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2.5s infinite; }
 
         @media (max-width: 768px) {
             main { padding-top: 110px !important; }
@@ -167,11 +174,12 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div class="lg:col-span-2 glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-trophy mr-2"></i>Nümayəndələrin Reytinqi</h3>
-                            <div class="flex-1 relative"><canvas id="rankingChart"></canvas></div>
+                        <div class="lg:col-span-2 glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col overflow-hidden shadow-sm">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i>Nümayəndələrin Reytinqi</h3>
+                            <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
+                                </div>
                         </div>
-                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col">
+                        <div class="glass-card p-4 md:p-8 h-[350px] md:h-[450px] flex flex-col shadow-sm">
                             <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-bullseye mr-2"></i>Kateqoriya Balansı</h3>
                             <div class="flex-1 relative flex items-center justify-center"><canvas id="radarChart"></canvas></div>
                         </div>
@@ -322,7 +330,7 @@
 
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
-        let rankingChart, radarChart, map, doughnutChart, trendChart;
+        let radarChart, map, doughnutChart, trendChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
@@ -495,6 +503,55 @@
             }).join('');
         }
 
+        function renderLeaderboard() {
+            const listContainer = document.getElementById('leaderboard-list');
+            if(!listContainer) return;
+            
+            const repAverages = [];
+            for (const rep in database) {
+                const visits = database[rep];
+                const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
+                repAverages.push({ name: rep, avg: Math.round(avg), count: visits.length });
+            }
+            
+            // Ortalama bala görə çoxdan aza doğru sıralama
+            repAverages.sort((a, b) => b.avg - a.avg);
+
+            if (repAverages.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Heç bir məlumat yoxdur.</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = repAverages.map((rep, index) => {
+                let medal = '';
+                if (index === 0) medal = '<i class="fa-solid fa-medal text-yellow-400 text-2xl drop-shadow-md"></i>';
+                else if (index === 1) medal = '<i class="fa-solid fa-medal text-slate-300 text-2xl drop-shadow-md"></i>';
+                else if (index === 2) medal = '<i class="fa-solid fa-medal text-amber-600 text-2xl drop-shadow-md"></i>';
+                else medal = `<span class="text-slate-400 font-black text-sm w-6 text-center">${index + 1}</span>`;
+
+                let colorClass = 'bg-blue-600';
+                if (rep.avg >= 90) colorClass = 'bg-emerald-500';
+                else if (rep.avg < 70) colorClass = 'bg-rose-500';
+                else colorClass = 'bg-amber-500';
+
+                return `
+                <div class="flex items-center gap-4 py-3 px-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div class="flex items-center justify-center w-8 shrink-0">${medal}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="font-black text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
+                            <span class="font-black text-sm text-slate-800 dark:text-white">${rep.avg} Bal</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
+                            <div class="${colorClass} h-full rounded-full transition-all duration-1000 relative" style="width: ${rep.avg}%">
+                                <div class="shimmer-bg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function updateDashboard() {
             const selectedRep = document.getElementById('rep-selector').value;
             let allVisits = [];
@@ -509,23 +566,15 @@
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
+            // Yeni Liderlər Lövhəsini yüklə
+            renderLeaderboard();
+            
             updateCharts(filtered, allVisits);
             renderHistory(filtered);
-            renderActivityFeed(allVisits); // Feed həmişə ümumi məlumatı göstərsin (və ya istsəniz filterli)
+            renderActivityFeed(allVisits); 
         }
 
         function updateCharts(filtered, allVisits) {
-            // 1. Bar Chart (Ranking)
-            const ctxR = document.getElementById('rankingChart').getContext('2d');
-            const labels = Object.keys(database);
-            const scores = labels.map(r => (database[r].reduce((a,b)=>a+b.score,0)/database[r].length).toFixed(1));
-            if(rankingChart) rankingChart.destroy();
-            rankingChart = new Chart(ctxR, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Ortalama Bal', data: scores, backgroundColor: '#3b82f6', borderRadius: 6 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
-            });
-
             // 2. Radar Chart
             const ctxRadar = document.getElementById('radarChart').getContext('2d');
             const radarData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; // Sadələşdirmək üçün son yoxlanış götürülür
