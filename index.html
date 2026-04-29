@@ -107,6 +107,16 @@
 
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll { scrollbar-width: thin; }
+
+        /* Print Style - Çap funksionallığı üçün */
+        @media print {
+            body * { visibility: hidden; }
+            #visit-modal, #visit-modal-content, #visit-modal-content * { visibility: visible; }
+            #visit-modal { display: block !important; position: absolute; left: 0; top: 0; width: 100%; height: auto !important; background: transparent; }
+            #visit-modal-content { position: relative; width: 100%; max-width: 100%; height: auto !important; max-height: none !important; box-shadow: none !important; transform: none !important; background: white !important; padding: 0 !important; margin: 0 !important;}
+            #modal-body { overflow: visible !important; height: auto !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden flex-col md:flex-row">
@@ -340,7 +350,7 @@
                             <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">Bütün siyahı və detallı filterləmə</p>
                         </header>
                         <div class="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end shadow-sm hover:shadow-lg transition-all">
-                            <div class="w-full md:w-1/3">
+                            <div class="w-full md:w-1/4">
                                 <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="input_rep">Nümayəndə seçimi</span></label>
                                 <select id="reytinq-rep-selector" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
                                     <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
@@ -351,13 +361,18 @@
                                     <option value="Loğman Əliyev">Loğman Əliyev</option>
                                 </select>
                             </div>
-                            <div class="w-full md:w-1/3">
+                            <div class="w-full md:w-1/4">
                                 <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="start_date">Başlanğıc</span></label>
-                                <input type="date" id="reytinq-start-date" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                                <input type="date" id="reytinq-start-date" onchange="updateReytinqPage()" onclick="this.showPicker()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
                             </div>
-                            <div class="w-full md:w-1/3">
+                            <div class="w-full md:w-1/4">
                                 <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="end_date">Bitiş</span></label>
-                                <input type="date" id="reytinq-end-date" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                                <input type="date" id="reytinq-end-date" onchange="updateReytinqPage()" onclick="this.showPicker()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                            </div>
+                            <div class="w-full md:w-1/4">
+                                <button onclick="clearReytinqFilters()" class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-eraser"></i> Filteri təmizlə
+                                </button>
                             </div>
                         </div>
                         
@@ -369,6 +384,31 @@
                 </div>
 
                 <div id="checklist" class="section-content">
+                    <div class="max-w-6xl mx-auto space-y-6 mb-6">
+                        <header class="mb-4">
+                            <h2 class="text-2xl font-black text-blue-600 uppercase tracking-tighter">Nəticələr</h2>
+                            <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">Axtarış və Filterləmə</p>
+                        </header>
+                        <div class="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end shadow-sm hover:shadow-lg transition-all">
+                            <div class="w-full md:w-1/3">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest">Axtarış (Ad / Kod)</label>
+                                <input type="text" id="checklist-search" onkeyup="updateChecklistFilters()" placeholder="Məs: Zaur və ya 11604" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 hover:border-blue-400 transition-all">
+                            </div>
+                            <div class="w-full md:w-1/4">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest">Başlanğıc</label>
+                                <input type="date" id="checklist-start-date" onchange="updateChecklistFilters()" onclick="this.showPicker()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                            </div>
+                            <div class="w-full md:w-1/4">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest">Bitiş</label>
+                                <input type="date" id="checklist-end-date" onchange="updateChecklistFilters()" onclick="this.showPicker()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                            </div>
+                            <div class="w-full md:w-1/6">
+                                <button onclick="clearChecklistFilters()" class="w-full p-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-eraser"></i> Təmizlə
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div id="checklist-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-6xl mx-auto"></div>
                 </div>
 
@@ -457,7 +497,7 @@
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-400 uppercase ml-2"><span data-i18n="date_select">Tarix seçin</span></label>
-                                    <input type="date" id="report-date" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all" onchange="generateInternalReport()">
+                                    <input type="date" id="report-date" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all" onclick="this.showPicker()" onchange="generateInternalReport()">
                                     <p id="weekly-info" class="hidden text-[10px] text-amber-600 font-bold ml-2 italic">* Həftəlik hesabat üçün Bazar ertəsini seçin.</p>
                                 </div>
                                 <div id="internal-report-results"></div>
@@ -482,8 +522,8 @@
     <div id="visit-modal" class="hidden fixed inset-0 z-[10000] bg-slate-900/50 backdrop-blur-sm flex justify-center items-end md:items-center">
         <div class="bg-white dark:bg-slate-900 w-full md:w-3/4 max-w-2xl h-[85vh] md:h-auto md:max-h-[85vh] rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col overflow-hidden transform transition-transform translate-y-full md:translate-y-0" id="visit-modal-content">
             <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                <h3 class="font-black text-blue-600 text-lg uppercase tracking-wider" id="modal-title">Ziyarət Nəticəsi</h3>
-                <button onclick="closeVisitDetails()" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-black text-blue-600 text-lg uppercase tracking-wider flex items-center" id="modal-title">Ziyarət Nəticəsi</h3>
+                <button onclick="closeVisitDetails()" class="no-print w-8 h-8 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 hover:text-rose-500 transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 overflow-y-auto flex-1 space-y-6" id="modal-body">
             </div>
@@ -554,6 +594,15 @@
             ru: { nav_home: "Панель", nav_reytinq: "Рейтинг сотрудников", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
         };
 
+        // Tarix formati funksiyası DD-MM-YYYY
+        function getFormattedDate(timestamp) {
+            const dateObj = new Date(timestamp);
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const y = dateObj.getFullYear();
+            return `${d}-${m}-${y}`;
+        }
+
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const ov = document.getElementById('mobile-overlay');
@@ -621,7 +670,7 @@
                     localStorage.setItem('azl_user', JSON.stringify(user));
                     initApp();
                 } else {
-                    alert("Məlumatlar yanlışdır. Şifrə və ya nömrə səhvdir.");
+                    alert("Məlumatlar yanlışdır. Şifrə və nömrə səhvdir.");
                 }
             } catch(e) { 
                 console.error("Firebase Giriş Xətası:", e);
@@ -814,6 +863,13 @@
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        function clearReytinqFilters() {
+            document.getElementById('reytinq-rep-selector').value = '';
+            document.getElementById('reytinq-start-date').value = '';
+            document.getElementById('reytinq-end-date').value = '';
+            updateReytinqPage();
         }
 
         function updateReytinqPage() {
@@ -1085,10 +1141,44 @@
             renderDecayRisk(allVisits);    
 
             updateCharts(filtered, allVisits);
-            renderHistory(filtered);
+            
+            // Nəticələr (Checklist) panelini yeniləyirik
+            updateChecklistFilters();
+            
             renderActivityFeed(allVisits); 
             
             updateReytinqPage();
+        }
+
+        function clearChecklistFilters() {
+            document.getElementById('checklist-search').value = '';
+            document.getElementById('checklist-start-date').value = '';
+            document.getElementById('checklist-end-date').value = '';
+            updateChecklistFilters();
+        }
+
+        function updateChecklistFilters() {
+            const selectedRep = document.getElementById('rep-selector').value;
+            let allVisits = [...allVisitsGlobal].sort((a,b) => b.timestamp - a.timestamp);
+            let filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
+
+            const searchVal = document.getElementById('checklist-search').value.toLowerCase();
+            const startDateVal = document.getElementById('checklist-start-date').value;
+            const endDateVal = document.getElementById('checklist-end-date').value;
+
+            if (searchVal) {
+                filtered = filtered.filter(v => v.rep.toLowerCase().includes(searchVal) || v.code.toLowerCase().includes(searchVal));
+            }
+            if (startDateVal) {
+                const startStamp = new Date(startDateVal).setHours(0,0,0,0);
+                filtered = filtered.filter(v => v.timestamp >= startStamp);
+            }
+            if (endDateVal) {
+                const endStamp = new Date(endDateVal).setHours(23,59,59,999);
+                filtered = filtered.filter(v => v.timestamp <= endStamp);
+            }
+
+            renderHistory(filtered);
         }
 
         function updateCharts(filtered, allVisits) {
@@ -1226,7 +1316,7 @@
                 <div onclick="openVisitDetails(${e.timestamp})" class="glass-card p-5 flex justify-between items-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group">
                     <div>
                         <p class="font-black text-blue-600 text-lg group-hover:text-blue-700 transition-colors"><i class="fa-solid fa-store mr-2"></i>${e.code}</p>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${e.rep} • <i class="fa-regular fa-calendar ml-1 mr-1"></i>${e.date}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${e.rep} • <i class="fa-regular fa-calendar ml-1 mr-1"></i>${getFormattedDate(e.timestamp)}</p>
                     </div>
                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm group-hover:scale-110 transition-transform">${e.score}</div>
                 </div>
@@ -1237,12 +1327,12 @@
             const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
             if(!visit) return;
             
-            document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-slate-400 ml-2 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-lg">${visit.score} Bal</span>`;
+            document.getElementById('modal-title').innerHTML = `<div class="flex items-center"><i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-slate-400 ml-2 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-lg">${visit.score} Bal</span></div> <button onclick="window.print()" class="no-print bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-xs font-bold flex items-center shadow-sm"><i class="fa-solid fa-print mr-1"></i>Çap et</button>`;
             
             let html = `<div class="flex flex-wrap gap-4 mb-4 text-xs font-bold text-slate-500 dark:text-slate-400">
                 <span><i class="fa-solid fa-user-tie mr-1"></i> ${visit.rep}</span>
                 <span><i class="fa-solid fa-chalkboard-user mr-1"></i> ${visit.trainer || 'Anonim'}</span>
-                <span><i class="fa-regular fa-calendar mr-1"></i> ${visit.date}</span>
+                <span><i class="fa-regular fa-calendar mr-1"></i> ${getFormattedDate(visit.timestamp)}</span>
             </div>`;
 
             if(visit.details) {
@@ -1393,8 +1483,8 @@
             }
             let filtered = [];
             if(reportType === 'daily') {
-                const targetStr = selectedDate.toLocaleDateString('az-AZ');
-                filtered = allVisitsGlobal.filter(v => v.date === targetStr);
+                const targetStr = getFormattedDate(selectedDate.getTime());
+                filtered = allVisitsGlobal.filter(v => getFormattedDate(v.timestamp) === targetStr);
             } else {
                 const startOfWeek = new Date(selectedDate);
                 const endOfWeek = new Date(startOfWeek);
@@ -1440,7 +1530,7 @@
                 <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px;">
                     <h1 style="color: #3b82f6; margin: 0; font-size: 24px; font-weight: 800;">AZL TRAINING</h1>
                     <h2 style="margin: 5px 0 0 0; font-size: 16px; color: #64748b;">${title}</h2>
-                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Çıxarış tarixi: ${new Date().toLocaleDateString('az-AZ')} ${new Date().toLocaleTimeString('az-AZ')}</p>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Çıxarış tarixi: ${getFormattedDate(Date.now())} ${new Date().toLocaleTimeString('az-AZ')}</p>
                 </div>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
                     <div><strong>Ümumi Ziyarət:</strong> ${data.length}</div>
@@ -1464,7 +1554,7 @@
                 const scoreColor = item.score >= 80 ? '#10b981' : (item.score >= 60 ? '#f59e0b' : '#f43f5e');
                 tableHTML += `
                     <tr style="background-color: ${bg};">
-                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.date}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${getFormattedDate(item.timestamp)}</td>
                         <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${item.rep}</td>
                         <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.code}</td>
                         <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.trainer || 'Anonim'}</td>
