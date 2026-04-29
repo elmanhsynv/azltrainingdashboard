@@ -105,7 +105,6 @@
         
         .dashboard-header-fix { margin-top: 10px; }
 
-        /* Yeni Sidebar Blokları üçün Əlavə Stillər */
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll { scrollbar-width: thin; }
     </style>
@@ -167,6 +166,7 @@
                 <nav class="flex flex-col w-full gap-1">
                     <p class="text-[9px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Naviqasiya</p>
                     <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie w-5"></i> <span data-i18n="nav_home">Dashboard</span></button>
+                    <button onclick="showSection('reytinq')" id="nav-reytinq" class="nav-btn"><i class="fa-solid fa-ranking-star w-5"></i> <span data-i18n="nav_reytinq">Nümayəndə reytinqi</span></button>
                     <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-square-poll-vertical w-5"></i> <span data-i18n="nav_checklist">Nəticələr</span></button>
                     <button onclick="showSection('ziyaretler')" id="nav-visits" class="nav-btn"><i class="fa-solid fa-map-location-dot w-5"></i> <span data-i18n="nav_visits">Ziyarətlər</span></button>
                     <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders w-5"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
@@ -278,7 +278,7 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2 glass-card p-6 md:p-8 h-[350px] md:h-[450px] flex flex-col overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi (Təsir İndeksi ilə)</span></h3>
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-4 tracking-widest shrink-0"><i class="fa-solid fa-trophy mr-2 text-yellow-500"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi (Təsir İndeksi ilə) - Top 5</span></h3>
                             <div id="leaderboard-list" class="flex-1 overflow-y-auto pr-3 feed-scroll pb-4 space-y-1">
                                 </div>
                         </div>
@@ -331,6 +331,41 @@
                         </div>
                     </div>
 
+                </div>
+
+                <div id="reytinq" class="section-content">
+                    <div class="max-w-7xl mx-auto space-y-6">
+                        <header class="mb-8">
+                            <h2 class="text-2xl font-black text-blue-600 uppercase tracking-tighter" data-i18n="nav_reytinq">Nümayəndə Reytinqi</h2>
+                            <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">Bütün siyahı və detallı filterləmə</p>
+                        </header>
+                        <div class="glass-card p-6 md:p-8 flex flex-col md:flex-row gap-4 items-end shadow-sm hover:shadow-lg transition-all">
+                            <div class="w-full md:w-1/3">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="input_rep">Nümayəndə seçimi</span></label>
+                                <select id="reytinq-rep-selector" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                                    <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
+                                    <option value="Zaur Xalinbekov">Zaur Xalinbekov</option>
+                                    <option value="Anar Babayev">Anar Babayev</option>
+                                    <option value="Emil Hüseynov">Emil Hüseynov</option>
+                                    <option value="Təvəkkül Abdullayev">Təvəkkül Abdullayev</option>
+                                    <option value="Loğman Əliyev">Loğman Əliyev</option>
+                                </select>
+                            </div>
+                            <div class="w-full md:w-1/3">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="start_date">Başlanğıc</span></label>
+                                <input type="date" id="reytinq-start-date" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                            </div>
+                            <div class="w-full md:w-1/3">
+                                <label class="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-2 tracking-widest"><span data-i18n="end_date">Bitiş</span></label>
+                                <input type="date" id="reytinq-end-date" onchange="updateReytinqPage()" class="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-xs outline-none dark:bg-slate-800 cursor-pointer hover:border-blue-400 transition-all">
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-6 md:p-8 flex flex-col shadow-sm">
+                            <h3 class="font-black text-slate-400 dark:text-slate-500 text-xs uppercase mb-6 tracking-widest shrink-0"><i class="fa-solid fa-list-ol mr-2"></i><span data-i18n="dash_leaderboard">Nümayəndələrin Reytinqi</span></h3>
+                            <div id="full-leaderboard-list" class="flex-1 space-y-2"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="checklist" class="section-content">
@@ -513,10 +548,10 @@
         ];
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi (Təsir İndeksi ilə)", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Təhkim Olunmuş Nümayəndə:", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı" },
-            tr: { nav_home: "Panel", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması (Etki İndeksi)", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Atanan Temsilci:", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı" },
-            en: { nav_home: "Dashboard", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard (Impact Index)", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Assigned Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account" },
-            ru: { nav_home: "Панель", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг (Индекс влияния)", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Представитель:", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера" }
+            az: { nav_home: "Dashboard", nav_reytinq: "Nümayəndə reytinqi", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Nümayəndə seçimi", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı", start_date: "Başlanğıc", end_date: "Bitiş" },
+            tr: { nav_home: "Panel", nav_reytinq: "Temsilci Reytingi", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Temsilci Seçimi", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı", start_date: "Başlangıç", end_date: "Bitiş" },
+            en: { nav_home: "Dashboard", nav_reytinq: "Rep Rankings", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Select Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account", start_date: "Start Date", end_date: "End Date" },
+            ru: { nav_home: "Панель", nav_reytinq: "Рейтинг сотрудников", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
         };
 
         function toggleSidebar() {
@@ -527,7 +562,7 @@
         }
 
         function toggleAccordion(id) {
-            const content = document.getElementById(id);
+            const content = document.getElementById('reports-content');
             content.classList.toggle('hidden');
         }
 
@@ -668,7 +703,6 @@
             
             const latestVisits = allVisits.slice(0, 15);
             
-            // Sidebar Mini Feed Render
             if(miniFeedContainer) {
                 miniFeedContainer.innerHTML = allVisits.slice(0, 3).map(v => `
                     <div class="border-l-2 border-blue-500 pl-3 py-1">
@@ -724,9 +758,115 @@
             }
             
             repStats.sort((a, b) => b.avg - a.avg);
+            
+            const top5Stats = repStats.slice(0, 5);
+
+            if (top5Stats.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Heç bir məlumat yoxdur.</p>`;
+                return;
+            }
+
+            listContainer.innerHTML = top5Stats.map((rep, index) => {
+                let medal = '';
+                let avatarStyle = '';
+                let initials = rep.name.split(' ').map(w => w.charAt(0)).join('').toUpperCase().substring(0, 2);
+
+                if (index === 0) {
+                    medal = '<i class="fa-solid fa-medal text-yellow-400 text-2xl drop-shadow-md"></i>';
+                    avatarStyle = 'border-yellow-400 ring-2 ring-yellow-400/30 bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg shadow-yellow-500/30';
+                } else if (index === 1) {
+                    medal = '<i class="fa-solid fa-medal text-slate-300 text-2xl drop-shadow-md"></i>';
+                    avatarStyle = 'border-slate-300 ring-2 ring-slate-300/30 bg-gradient-to-br from-slate-300 to-slate-500 text-white shadow-lg shadow-slate-500/30';
+                } else if (index === 2) {
+                    medal = '<i class="fa-solid fa-medal text-amber-600 text-2xl drop-shadow-md"></i>';
+                    avatarStyle = 'border-amber-600 ring-2 ring-amber-600/30 bg-gradient-to-br from-amber-500 to-orange-700 text-white shadow-lg shadow-orange-600/30';
+                } else {
+                    medal = `<span class="text-slate-400 font-black text-sm w-6 text-center">${index + 1}</span>`;
+                    avatarStyle = 'border-transparent bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 border border-blue-100 dark:border-blue-800';
+                }
+
+                let colorClass = 'bg-blue-600';
+                if (rep.avg >= 90) colorClass = 'bg-emerald-500';
+                else if (rep.avg < 70) colorClass = 'bg-rose-500';
+                else colorClass = 'bg-amber-500';
+
+                let deltaDisplay = '';
+                if(rep.delta > 0) {
+                    deltaDisplay = `<span title="Təlim dən sonrakı inkişaf sıçrayışı" class="text-[10px] text-emerald-500 font-black ml-2 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200"><i class="fa-solid fa-arrow-up"></i> ${rep.delta.toFixed(1)} Bal</span>`;
+                } else if (rep.delta < 0) {
+                    deltaDisplay = `<span title="Təlim dən sonrakı geriləmə" class="text-[10px] text-rose-500 font-black ml-2 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-200"><i class="fa-solid fa-arrow-down"></i> ${Math.abs(rep.delta).toFixed(1)} Bal</span>`;
+                }
+
+                return `
+                <div class="flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-white dark:hover:bg-slate-800/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group">
+                    <div class="flex items-center justify-center w-8 shrink-0">${medal}</div>
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-[10px] shrink-0 border-2 ${avatarStyle} transition-transform group-hover:scale-110">${initials}</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="font-bold text-slate-800 dark:text-white text-[11px] uppercase tracking-wide">${rep.name} ${deltaDisplay} <span class="text-[9px] text-slate-400 font-bold ml-1 lowercase tracking-normal">(${rep.count} yoxlanış)</span></span>
+                            <span class="font-black text-sm text-slate-800 dark:text-white">${rep.avg} Bal</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-700/50 rounded-full h-2.5 shadow-inner overflow-hidden">
+                            <div class="${colorClass} h-full rounded-full transition-all duration-1000 relative" style="width: ${rep.avg}%">
+                                <div class="shimmer-bg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function updateReytinqPage() {
+            const listContainer = document.getElementById('full-leaderboard-list');
+            if(!listContainer) return;
+
+            const selectedRep = document.getElementById('reytinq-rep-selector').value;
+            const startDateVal = document.getElementById('reytinq-start-date').value;
+            const endDateVal = document.getElementById('reytinq-end-date').value;
+
+            let filteredVisits = [...allVisitsGlobal];
+
+            if (startDateVal) {
+                const startStamp = new Date(startDateVal).setHours(0,0,0,0);
+                filteredVisits = filteredVisits.filter(v => v.timestamp >= startStamp);
+            }
+            if (endDateVal) {
+                const endStamp = new Date(endDateVal).setHours(23,59,59,999);
+                filteredVisits = filteredVisits.filter(v => v.timestamp <= endStamp);
+            }
+
+            let tempDB = {};
+            filteredVisits.forEach(v => {
+                if(!tempDB[v.rep]) tempDB[v.rep] = [];
+                tempDB[v.rep].push(v);
+            });
+
+            const repStats = [];
+            
+            for (const rep in database) {
+                if (selectedRep && rep !== selectedRep) continue;
+
+                const visits = tempDB[rep] ? [...tempDB[rep]].sort((a,b) => a.timestamp - b.timestamp) : [];
+
+                if(visits.length === 0) continue; 
+
+                const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
+
+                let delta = 0;
+                if(visits.length > 1) {
+                    const latest = visits[visits.length - 1].score;
+                    const prevVisits = visits.slice(0, visits.length - 1);
+                    const prevAvg = prevVisits.reduce((s,v)=>s+v.score,0)/prevVisits.length;
+                    delta = latest - prevAvg;
+                }
+
+                repStats.push({ name: rep, avg: Math.round(avg), count: visits.length, delta: delta });
+            }
+
+            repStats.sort((a, b) => b.avg - a.avg);
 
             if (repStats.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Heç bir məlumat yoxdur.</p>`;
+                listContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-10">Seçilmiş aralığa uyğun məlumat tapılmadı.</p>`;
                 return;
             }
 
@@ -930,7 +1070,6 @@
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
-            // Sidebar Status Yeniləmə
             const dailyVisits = allVisitsGlobal.filter(v => v.date === new Date().toLocaleDateString('az-AZ')).length;
             const target = 5;
             const percent = Math.min((dailyVisits / target) * 100, 100);
@@ -948,6 +1087,8 @@
             updateCharts(filtered, allVisits);
             renderHistory(filtered);
             renderActivityFeed(allVisits); 
+            
+            updateReytinqPage();
         }
 
         function updateCharts(filtered, allVisits) {
@@ -1152,7 +1293,6 @@
             setTimeout(() => document.getElementById('visit-modal').classList.add('hidden'), 300);
         }
 
-        // Checklist yoxlama və səhifədən çıxışın qarşısını alma
         function isChecklistDirty() {
             const currentSection = document.querySelector('.section-content.active');
             if (currentSection && currentSection.id === 'new-checklist-form') {
@@ -1164,7 +1304,6 @@
             return false;
         }
 
-        // Brauzer yeniləmə/bağlama üçün xəbərdarlıq (Refresh / Browser close)
         window.addEventListener('beforeunload', function (e) {
             if (isChecklistDirty()) {
                 e.preventDefault();
@@ -1173,10 +1312,9 @@
         });
 
         function showSection(id) {
-            // Əgər checklist doldurulursa və başqa səhifəyə keçmək istəyirsə
             if (isChecklistDirty() && id !== 'new-checklist-form') {
                 if (!confirm("Checklist tam doldurulmayıb. Çıxsanız məlumatlar itəcək. Davam etmək istəyirsiniz?")) {
-                    return; // Keçidi dayandır
+                    return; 
                 }
             }
 
@@ -1186,7 +1324,7 @@
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
             
-            document.getElementById('header-filter-container').style.display = (id === 'ayarlar') ? 'none' : 'flex';
+            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq') ? 'none' : 'flex';
 
             if(document.getElementById('sidebar').classList.contains('open')) {
                 toggleSidebar(); 
@@ -1197,6 +1335,10 @@
                     initMap();
                     if(map) map.invalidateSize();
                 }, 400);
+            }
+            
+            if(id === 'reytinq') {
+                updateReytinqPage();
             }
         }
 
@@ -1482,7 +1624,6 @@
                 
                 alert(`Oflayn Rejim! Məlumatlar cihazda yadda saxlanıldı (Nəticə: ${finalScore} Bal). İnternet bağlantısı bərpa olunduqda sistemə sinxronizasiya ediləcək.`);
                 
-                // Formu təmizlə ki isChecklistDirty false qaytarsın
                 document.getElementById('point-code-input').value = '';
                 document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
                 document.querySelectorAll('textarea').forEach(el => el.value = '');
@@ -1494,7 +1635,6 @@
             db.ref('visits').push(visit).then(() => {
                 alert(`Məlumatlar yadda saxlanıldı! Yekun Nəticə: ${finalScore} Bal`);
                 
-                // Formu təmizlə ki isChecklistDirty false qaytarsın
                 document.getElementById('point-code-input').value = '';
                 document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
                 document.querySelectorAll('textarea').forEach(el => el.value = '');
