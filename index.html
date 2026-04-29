@@ -25,7 +25,7 @@
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } } }
     </script>
     <style>
-        :root { --primary: #3b82f6; }
+        :root { --primary: #02117b; }
         
         @keyframes gradientMove {
             0% { background-position: 0% 50%; }
@@ -60,7 +60,7 @@
         .stat-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2); }
         .stat-card i.bg-icon { position: absolute; right: -15px; bottom: -15px; font-size: 6rem; opacity: 0.15; color: white; }
         .nav-btn { padding: 0.8rem 1.5rem; margin: 4px 0; font-size: 14px; display: flex; align-items: center; gap: 12px; border-radius: 1rem; color: #64748b; transition: 0.3s; }
-        .nav-active { background: var(--primary) !important; color: white !important; box-shadow: 0 8px 20px -5px rgba(59, 130, 246, 0.4); }
+        .nav-active { background: var(--primary) !important; color: white !important; box-shadow: 0 8px 20px -5px #02117b66; }
         #auth-screen { position: fixed; inset: 0; z-index: 1000; background: #f1f5f9; display: flex; align-items: center; justify-content: center; }
         .section-content { display: none; width: 100%; }
         .section-content.active { display: block; }
@@ -218,7 +218,7 @@
             </div>
 
             <div class="mt-auto pt-6 shrink-0 border-t border-slate-100 dark:border-white/5">
-                <button onclick="openNewChecklist()" class="w-full bg-[#02117b] text-white py-4 rounded-2xl shadow-xl shadow-blue-600/30 font-black text-xs uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-600/40 transition-all"><i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span></button>
+                <button onclick="openNewChecklist()" class="w-full bg-[#02117b] text-white py-4 rounded-2xl shadow-xl shadow-[#02117b]/30 font-black text-xs uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#02117b]/40 transition-all"><i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span></button>
             </div>
         </aside>
 
