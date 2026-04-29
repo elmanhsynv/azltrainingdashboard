@@ -70,7 +70,7 @@
         aside.open { transform: translateX(0); }
         #mobile-overlay.open { display: block; }
         
-        .mobile-header { position: fixed; top: 0; left: 0; right: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 75px; display: flex; align-items: center; padding: 0 24px; }
+        .mobile-header { position: sticky; top: 0; z-index: 9990; background: white; border-bottom: 1px solid #e2e8f0; height: 75px; display: flex; align-items: center; padding: 0 24px; }
 
         .feed-scroll::-webkit-scrollbar { width: 6px; }
         .feed-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -81,19 +81,6 @@
             100% { transform: translateX(100%); }
         }
         .shimmer-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: shimmer 2.5s infinite; }
-
-        @media (max-width: 768px) {
-            main { padding-top: 110px !important; }
-            .dashboard-header-fix { margin-top: 15px !important; }
-        }
-
-        @media (min-width: 769px) {
-            aside { position: relative !important; transform: translateX(0) !important; z-index: 40; display: flex; }
-            main { margin-left: 0; transition: 0.3s; padding-top: 85px !important; }
-            .mobile-header { left: 280px; }
-            .mobile-header .fa-bars { display: none !important; }
-            #mobile-overlay { display: none !important; }
-        }
         
         .dashboard-header-fix { margin-top: 10px; }
 
@@ -131,31 +118,18 @@
     <div id="mobile-overlay" onclick="toggleSidebar()"></div>
 
     <div id="main-app" class="main-container h-full w-full flex-col md:flex-row" style="display: none;">
-        <aside id="sidebar" class="w-72 bg-white border-r border-slate-200 h-full flex flex-col p-6 shrink-0 overflow-hidden">
+        <aside id="sidebar" class="bg-white border-r border-slate-200 h-full flex flex-col p-6 shrink-0 overflow-hidden">
             <div class="mb-8 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onclick="handleLogoClick()">
                     <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
                     <span class="font-black text-2xl text-[#02117b]">AZL</span>
                     <span class="font-medium text-2xl">Training</span>
                 </div>
-                <button onclick="toggleSidebar()" class="text-slate-400 text-xl md:hidden"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleSidebar()" class="text-slate-400 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="flex-1 overflow-y-auto pr-2 sidebar-scroll space-y-8">
                 
-                <div class="p-4 rounded-3xl bg-blue-600/5 border border-blue-100/50">
-                    <p class="text-[9px] font-black text-[#02117B] uppercase mb-3 tracking-tighter flex items-center justify-between">
-                        GÜNLÜK HƏDƏF <span id="sb-sync-status" class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    </p>
-                    <div class="flex items-center justify-between mb-2">
-                        <span id="sb-target-label" class="text-xs font-black">0/5 Ziyarət</span>
-                        <span id="sb-target-percent" class="text-[10px] font-bold text-slate-400">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
-                        <div id="sb-target-bar" class="bg-blue-600 h-full transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                </div>
-
                 <nav class="flex flex-col w-full gap-1">
                     <p class="text-[9px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Naviqasiya</p>
                     <button onclick="showSection('dashboard')" id="nav-dashboard" class="nav-btn nav-active"><i class="fa-solid fa-chart-pie w-5"></i> <span data-i18n="nav_home">Dashboard</span></button>
@@ -200,16 +174,18 @@
             </div>
         </aside>
 
-        <main class="flex-1 overflow-y-auto relative">
-            <div class="mobile-header shadow-sm flex items-center justify-between md:justify-end">
-                <button onclick="toggleSidebar()" class="text-[#02117b] text-2xl mr-4 md:hidden"><i class="fa-solid fa-bars"></i></button>
-                <div class="flex items-center cursor-pointer md:ml-auto" onclick="handleLogoClick()">
-                    <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
-                    <span class="font-black text-xl text-[#02117b]">AZL <span class="text-[#000000] font-medium">Training</span></span>
+        <main class="flex-1 flex flex-col h-full relative">
+            <div class="mobile-header shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="text-[#02117b] text-2xl"><i class="fa-solid fa-bars"></i></button>
+                    <div class="flex items-center cursor-pointer" onclick="handleLogoClick()">
+                        <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
+                        <span class="font-black text-xl text-[#02117b]">AZL <span class="text-[#000000] font-medium">Training</span></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-6 md:p-10 max-w-7xl mx-auto dashboard-header-fix">
+            <div class="flex-1 overflow-y-auto p-6 md:p-10 dashboard-header-fix w-full max-w-7xl mx-auto">
                 <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10">
                     <div id="global-title-container">
                         <h1 id="page-title" class="text-2xl md:text-3xl font-black uppercase text-blue-600 tracking-tighter hover:scale-[1.01] transition-transform cursor-default">PERFORMANS ANALİZİ</h1>
@@ -1314,13 +1290,6 @@
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
-            const dailyVisits = allVisitsGlobal.filter(v => v.date === new Date().toLocaleDateString('az-AZ')).length;
-            const target = 5;
-            const percent = Math.min((dailyVisits / target) * 100, 100);
-            document.getElementById('sb-target-label').innerText = `${dailyVisits}/${target} Ziyarət`;
-            document.getElementById('sb-target-percent').innerText = `${Math.round(percent)}%`;
-            document.getElementById('sb-target-bar').style.width = `${percent}%`;
-
             updateOrientationModule(allVisits);
 
             renderLeaderboard();
@@ -1551,11 +1520,12 @@
             body.style.overflowY = 'visible';
 
             const opt = {
-                margin:       5,
+                margin:       10,
                 filename:     'Ziyaret_Neticesi.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, windowHeight: element.scrollHeight },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
             html2pdf().from(element).set(opt).save().then(() => {
@@ -1584,7 +1554,7 @@
             if(visit.details) {
                 visit.details.forEach(d => {
                     const cat = formSchema[d.catIndex];
-                    html += `<div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                    html += `<div class="bg-slate-50 rounded-2xl p-4 border border-slate-100" style="page-break-inside: avoid;">
                         <h4 class="font-black text-blue-600 uppercase text-[10px] tracking-widest mb-3">${cat.cat}</h4>
                         <div class="space-y-3">`;
                     
@@ -1661,7 +1631,7 @@
             if(btn) btn.classList.add('nav-active');
             
             document.getElementById('global-title-container').style.display = (id === 'dashboard') ? 'block' : 'none';
-            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq' || id === 'new-checklist-form') ? 'none' : 'flex';
+            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq' || id === 'new-checklist-form' || id === 'checklist') ? 'none' : 'flex';
 
             if(document.getElementById('sidebar').classList.contains('open')) {
                 toggleSidebar(); 
