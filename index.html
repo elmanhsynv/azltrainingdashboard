@@ -155,7 +155,7 @@
     <div id="main-app" class="main-container h-full w-full flex flex-col md:flex-row">
         <aside id="sidebar" class="w-72 bg-white dark:bg-[#020617] border-r border-slate-200 dark:border-white/5 h-full flex flex-col p-6 shrink-0 overflow-hidden">
             <div class="mb-8 flex items-center justify-between shrink-0">
-                <div class="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform">
+                <div class="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onclick="handleLogoClick()">
                     <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
                     <span class="font-black text-2xl text-blue-600">AZL</span>
                     <span class="font-medium text-2xl dark:text-white ml-1">Training</span>
@@ -225,8 +225,10 @@
         <main class="flex-1 overflow-y-auto relative">
             <div class="mobile-header shadow-sm flex items-center">
                 <button onclick="toggleSidebar()" class="text-blue-600 text-2xl mr-4"><i class="fa-solid fa-bars"></i></button>
-                <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
-                <span class="font-black text-xl text-blue-600">AZL <span class="text-slate-800 dark:text-white font-medium">Training</span></span>
+                <div class="flex items-center cursor-pointer" onclick="handleLogoClick()">
+                    <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
+                    <span class="font-black text-xl text-blue-600">AZL <span class="text-slate-800 dark:text-white font-medium">Training</span></span>
+                </div>
             </div>
 
             <div class="p-6 md:p-10 max-w-7xl mx-auto dashboard-header-fix">
@@ -277,6 +279,10 @@
 
                 <div id="dashboard" class="section-content active space-y-8">
                     
+                    <button onclick="openNewChecklist()" class="w-full bg-blue-600 text-white py-4 rounded-2xl shadow-xl shadow-blue-600/30 font-black text-sm uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-600/40 transition-all mb-8">
+                        <i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist Yarat</span>
+                    </button>
+
                     <div id="auto-feedback-container" class="hidden"></div>
                     
                     <div class="glass-card p-6 md:p-8 border-l-4 border-indigo-500 shadow-sm">
@@ -312,8 +318,8 @@
                             <div id="systemic-gaps-list" class="flex-1 overflow-y-auto space-y-3">
                                 </div>
                         </div>
-                        <div class="glass-card p-6 md:p-8 flex flex-col hover:shadow-lg transition-shadow duration-300 border-t-4 border-amber-500">
-                            <h3 class="font-black text-amber-600 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-hourglass-half mr-2"></i>Risk Altında Olan Nöqtələr (>30 Gün)</h3>
+                        <div class="glass-card p-6 md:p-8 flex flex-col hover:shadow-lg transition-shadow duration-300 border-t-4 border-rose-500">
+                            <h3 class="font-black text-rose-600 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-user-shield mr-2"></i>Riskli Nümayəndələr (<50 Bal)</h3>
                             <div id="decay-risk-list" class="flex-1 overflow-y-auto space-y-3">
                                 </div>
                         </div>
@@ -717,14 +723,14 @@
             return `${d}-${m}-${y}`;
         }
 
-        // Flatpickr inisializasiyası - BÜTÜN tarix filterləri üçün formatlama və placeholder tətbiqi
+        // Flatpickr inisializasiyası
         document.addEventListener('DOMContentLoaded', function() {
             const fpConfig = {
-                dateFormat: "Y-m-d", // Hesablama üçün arxa plana gedəcək format
+                dateFormat: "Y-m-d", 
                 altInput: true,
-                altFormat: "d-m-Y", // İstifadəçiyə görünəcək gün-ay-il formatı
+                altFormat: "d-m-Y", 
                 locale: "az",
-                disableMobile: true // Mobil cihazlarda doğma mm/dd/yyyy formatından qaçmaq üçün vacibdir
+                disableMobile: true 
             };
 
             flatpickr("#reytinq-start-date, #reytinq-end-date", { 
@@ -742,6 +748,16 @@
                 onChange: function() { generateInternalReport(); } 
             });
         });
+
+        // Logo Naviqasiyası (Yeniləyir və ya Əsas ekrana qaytarır)
+        function handleLogoClick() {
+            const currentSection = document.querySelector('.section-content.active');
+            if (currentSection && currentSection.id === 'dashboard') {
+                location.reload();
+            } else {
+                showSection('dashboard');
+            }
+        }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -1155,48 +1171,44 @@
             `).join('');
         }
 
-        function renderDecayRisk(allVisits) {
+        function renderRiskReps(filtered) {
             const list = document.getElementById('decay-risk-list');
             if(!list) return;
 
-            const now = Date.now();
-            let latestVisits = {};
+            let tempDB = {};
+            filtered.forEach(v => {
+                if(!tempDB[v.rep]) tempDB[v.rep] = [];
+                tempDB[v.rep].push(v);
+            });
 
-            allVisits.forEach(v => {
-                if(!latestVisits[v.code] || latestVisits[v.code].timestamp < v.timestamp) {
-                    latestVisits[v.code] = v;
+            const riskyReps = [];
+            for (const rep in tempDB) {
+                const visits = tempDB[rep].sort((a, b) => b.timestamp - a.timestamp); // latest first
+                const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
+                if (avg < 50) {
+                    riskyReps.push({ rep: rep, avg: Math.round(avg), count: visits.length, lastVisit: visits[0] });
                 }
-            });
-
-            const riskyPoints = Object.values(latestVisits).filter(v => {
-                const daysSince = (now - v.timestamp) / (1000 * 60 * 60 * 24);
-                return daysSince > 30; 
-            });
-
-            if(riskyPoints.length === 0 && allVisits.length > 0) {
-                riskyPoints.push(allVisits[allVisits.length-1]);
-                riskyPoints[0].isMockDecay = true;
             }
 
-            if(riskyPoints.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-4">Risk qrupunda olan, uzun müddətdir yoxlanılmayan nöqtə yoxdur.</p>`;
+            riskyReps.sort((a,b) => a.avg - b.avg); // lowest first
+
+            if(riskyReps.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 italic text-center mt-4">Risk qrupunda olan (<50 bal) nümayəndə yoxdur.</p>`;
                 return;
             }
 
-            list.innerHTML = riskyPoints.map(v => {
-                const days = v.isMockDecay ? "30+" : Math.round((now - v.timestamp) / (1000 * 60 * 60 * 24));
-                return `
-                <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/50 p-3 rounded-xl flex items-center justify-between">
-                    <div>
-                        <p class="font-black text-amber-700 dark:text-amber-500 text-xs">${v.code}</p>
-                        <p class="text-[10px] text-slate-500 font-bold"><i class="fa-solid fa-user-tie mr-1"></i>${v.rep}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-400 text-[10px] font-black px-2 py-1 rounded-md border border-amber-200">Son Yoxlanış: ${days} gün</span>
-                        <p class="text-[9px] text-slate-400 mt-1 uppercase">Əvvəlki nəticə: ${v.score}</p>
-                    </div>
+            list.innerHTML = riskyReps.map(r => `
+            <div class="bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/50 p-3 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="font-black text-rose-700 dark:text-rose-500 text-xs"><i class="fa-solid fa-user-tie mr-1"></i>${r.rep}</p>
+                    <p class="text-[10px] text-slate-500 font-bold mt-1">Yoxlanış sayı: ${r.count}</p>
                 </div>
-            `}).join('');
+                <div class="text-right">
+                    <span class="bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-400 text-[10px] font-black px-2 py-1 rounded-md border border-rose-200">Ortalama: ${r.avg} Bal</span>
+                    <p class="text-[9px] text-slate-400 mt-1 uppercase">Son: ${getFormattedDate(r.lastVisit.timestamp)}</p>
+                </div>
+            </div>
+            `).join('');
         }
 
         function checkWeakPoints(visits, repName) {
@@ -1280,11 +1292,10 @@
 
             renderLeaderboard();
             renderSystemicGaps(filtered); 
-            renderDecayRisk(allVisits);    
+            renderRiskReps(filtered);    
 
             updateCharts(filtered, allVisits);
             
-            // Nəticələr (Checklist) panelini yeniləyirik
             updateChecklistFilters();
             
             renderActivityFeed(allVisits); 
@@ -1558,7 +1569,23 @@
             const btn = document.getElementById('nav-' + id);
             if(btn) btn.classList.add('nav-active');
             
-            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq') ? 'none' : 'flex';
+            // Dinamik başlıq və Tərcümə
+            const pageTitle = document.getElementById('page-title');
+            const i18nKeys = {
+                'dashboard': 'dash_title',
+                'reytinq': 'nav_reytinq',
+                'checklist': 'nav_checklist',
+                'ziyaretler': 'nav_visits',
+                'ayarlar': 'nav_settings',
+                'new-checklist-form': 'btn_quick_create'
+            };
+            if (pageTitle && i18nKeys[id]) {
+                pageTitle.setAttribute('data-i18n', i18nKeys[id]);
+                applyTrans();
+            }
+
+            // Yeni checklistdə yuxarıdakı filteri gizlət
+            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq' || id === 'new-checklist-form') ? 'none' : 'flex';
 
             if(document.getElementById('sidebar').classList.contains('open')) {
                 toggleSidebar(); 
@@ -1792,7 +1819,7 @@
             let totalScore = 0;
             let catScores = [0, 0, 0, 0, 0]; 
             let detailedAnswers = [];
-            let anyQuestionAnswered = false;
+            let allAnswered = true; // Mütləq doldurulma yoxlanışı
 
             const groups = document.querySelectorAll('#dynamic-questions > .glass-card');
             groups.forEach((group, index) => {
@@ -1803,7 +1830,7 @@
                 rows.forEach(row => {
                     const hasY = row.querySelector('.active-y') !== null;
                     const hasX = row.querySelector('.active-x') !== null;
-                    if(hasY || hasX) anyQuestionAnswered = true;
+                    if(!hasY && !hasX) allAnswered = false; // Cavablandırılmayıbsa
                     groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
                     if(hasY) yCount++;
                 });
@@ -1812,7 +1839,7 @@
                 if (noteContainer) {
                     const hasY = noteContainer.querySelector('.btn-good.active-y') !== null;
                     const hasX = noteContainer.querySelector('.btn-bad.active-x') !== null;
-                    if(hasY || hasX) anyQuestionAnswered = true;
+                    if(!hasY && !hasX) allAnswered = false; // Cavablandırılmayıbsa
                     groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
                     groupDetails.note = noteContainer.querySelector('textarea').value || "";
                     if(hasY) yCount++;
@@ -1835,7 +1862,7 @@
                 totalScore += groupPoints;
             });
 
-            if (!anyQuestionAnswered) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
+            if (!allAnswered) return alert("Bütün bölmələr və seçimlər mütləq doldurulmalıdır!");
 
             const finalScore = totalScore;
 
