@@ -1379,4 +1379,620 @@
             const trendScores = [];
             
             const last10 = chronological.slice(-10);
-            last10.forEach(v =>
+            last10.forEach(v => {
+                const d = new Date(v.timestamp);
+                trendDates.push(`${d.getDate()}/${d.getMonth()+1}`);
+                trendScores.push(v.score);
+            });
+
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            if(trendChart) trendChart.destroy();
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: trendDates.length ? trendDates : ['Yoxdur'],
+                    datasets: [{
+                        label: 'İnkişaf Balı',
+                        data: trendScores.length ? trendScores : [0],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4, 
+                        fill: true,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointHoverRadius: 6,
+                        pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, max: 100, grid: { display: false } }, x: { grid: { display: false } } },
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            const scatterData = filtered.map(v => {
+                let simulatedSales = (v.score * 12) + (Math.random() * 400); 
+                return { x: v.score, y: simulatedSales, r: 6 };
+            });
+
+            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
+            if(scatterChart) scatterChart.destroy();
+            scatterChart = new Chart(ctxScatter, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Nöqtələr (Bilik vs Satış)',
+                        data: scatterData.length ? scatterData : [{x:0, y:0, r:0}],
+                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 10, weight: 'bold' } },
+                            min: 0, max: 100 
+                        },
+                        y: { 
+                            title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 10, weight: 'bold' } },
+                            beginAtZero: true 
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderHistory(entries) {
+            const list = document.getElementById('checklist-history-list');
+            list.innerHTML = entries.map(e => `
+                <div onclick="openVisitDetails(${e.timestamp})" class="glass-card p-5 flex justify-between items-center shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group">
+                    <div>
+                        <p class="font-black text-blue-600 text-lg group-hover:text-blue-700 transition-colors"><i class="fa-solid fa-store mr-2"></i>${e.code}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase mt-1"><i class="fa-solid fa-user-tie mr-1"></i>${e.rep} • <i class="fa-regular fa-calendar ml-1 mr-1"></i>${getFormattedDate(e.timestamp)}</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 text-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm group-hover:scale-110 transition-transform">${e.score}</div>
+                </div>
+            `).join('');
+        }
+
+        function openVisitDetails(timestamp) {
+            const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
+            if(!visit) return;
+            
+            document.getElementById('modal-title').innerHTML = `<div class="flex items-center"><i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-slate-400 ml-2 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-lg">${visit.score} Bal</span></div> <button onclick="window.print()" class="no-print ml-8 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-xs font-bold flex items-center shadow-sm"><i class="fa-solid fa-print mr-1"></i>Çap et</button>`;
+            
+            let html = `<div class="flex flex-wrap gap-4 mb-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span><i class="fa-solid fa-user-tie mr-1"></i> ${visit.rep}</span>
+                <span><i class="fa-solid fa-chalkboard-user mr-1"></i> ${visit.trainer || 'Anonim'}</span>
+                <span><i class="fa-regular fa-calendar mr-1"></i> ${getFormattedDate(visit.timestamp)}</span>
+            </div>`;
+
+            if(visit.details) {
+                visit.details.forEach(d => {
+                    const cat = formSchema[d.catIndex];
+                    html += `<div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50">
+                        <h4 class="font-black text-blue-600 uppercase text-[10px] tracking-widest mb-3">${cat.cat}</h4>
+                        <div class="space-y-3">`;
+                    
+                    if(cat.q) {
+                        cat.q.forEach((qText, i) => {
+                            const ans = d.answers[i];
+                            const icon = ans === 'y' ? '<i class="fa-solid fa-check text-emerald-500"></i>' : (ans === 'x' ? '<i class="fa-solid fa-times text-rose-500"></i>' : '<i class="fa-solid fa-minus text-slate-300"></i>');
+                            html += `<div class="flex justify-between items-start gap-4 pb-2 border-b border-slate-100 dark:border-slate-700/50 last:border-0 last:pb-0">
+                                <p class="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed">${qText}</p>
+                                <div class="shrink-0 pt-0.5 text-base">${icon}</div>
+                            </div>`;
+                        });
+                    } else if (cat.hasNote) {
+                        const ans = d.answers[0];
+                        const icon = ans === 'y' ? '<i class="fa-solid fa-check text-emerald-500 text-lg"></i>' : (ans === 'x' ? '<i class="fa-solid fa-times text-rose-500 text-lg"></i>' : '<i class="fa-solid fa-minus text-slate-300 text-lg"></i>');
+                        const statusText = ans === 'y' ? cat.goodLabel : (ans === 'x' ? cat.badLabel : 'Qeyd edilməyib');
+                        html += `<div class="flex justify-between items-center gap-4">
+                                <p class="text-sm text-slate-700 dark:text-slate-300 font-black">${statusText}</p>
+                                <div class="shrink-0">${icon}</div>
+                            </div>`;
+                        if(d.note) {
+                            html += `<div class="mt-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-500 italic"><i class="fa-regular fa-comment-dots mr-1"></i> ${d.note}</div>`;
+                        }
+                    }
+                    html += `</div></div>`;
+                });
+            } else {
+                html += `<div class="p-10 text-center text-slate-400 font-bold text-sm bg-slate-50 dark:bg-slate-800 rounded-2xl shadow-inner"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Köhnə format ziyarət - Ətraflı detallar yadda saxlanılmayıb.</div>`;
+            }
+
+            document.getElementById('modal-body').innerHTML = html;
+            
+            const modal = document.getElementById('visit-modal');
+            const content = document.getElementById('visit-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('translate-y-full'), 10);
+        }
+
+        function closeVisitDetails() {
+            const content = document.getElementById('visit-modal-content');
+            content.classList.add('translate-y-full');
+            setTimeout(() => document.getElementById('visit-modal').classList.add('hidden'), 300);
+        }
+
+        function isChecklistDirty() {
+            const currentSection = document.querySelector('.section-content.active');
+            if (currentSection && currentSection.id === 'new-checklist-form') {
+                const codeInput = document.getElementById('point-code-input').value;
+                const anyCheck = document.querySelector('.active-y, .active-x');
+                const anyText = Array.from(document.querySelectorAll('textarea')).some(t => t.value.trim() !== "");
+                return (codeInput.trim() !== "" || anyCheck !== null || anyText);
+            }
+            return false;
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            if (isChecklistDirty()) {
+                e.preventDefault();
+                e.returnValue = ''; 
+            }
+        });
+
+        function showSection(id) {
+            if (isChecklistDirty() && id !== 'new-checklist-form') {
+                if (!confirm("Checklist tam doldurulmayıb. Çıxsanız məlumatlar itəcək. Davam etmək istəyirsiniz?")) {
+                    return; 
+                }
+            }
+
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+            const btn = document.getElementById('nav-' + id);
+            if(btn) btn.classList.add('nav-active');
+            
+            document.getElementById('header-filter-container').style.display = (id === 'ayarlar' || id === 'reytinq') ? 'none' : 'flex';
+
+            if(document.getElementById('sidebar').classList.contains('open')) {
+                toggleSidebar(); 
+            }
+            
+            if(id === 'ziyaretler') {
+                setTimeout(() => {
+                    initMap();
+                    if(map) map.invalidateSize();
+                }, 400);
+            }
+            
+            if(id === 'reytinq') {
+                updateReytinqPage();
+            }
+        }
+
+        function initMap() {
+            if(map) { map.remove(); }
+            map = L.map('map').setView([40.4093, 49.8671], 11);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+            
+            const heatData = [];
+            
+            Object.values(database).flat().forEach(e => {
+                if(e.coords && e.coords.lat) {
+                    L.marker([e.coords.lat, e.coords.lng]).addTo(map).bindPopup(`<b>${e.rep}</b><br>${e.code} - ${e.score} Bal`);
+                    
+                    let intensity = (100 - e.score) / 100;
+                    if(intensity > 0.3) { 
+                        heatData.push([e.coords.lat, e.coords.lng, intensity]);
+                    }
+                }
+            });
+
+            if(typeof L.heatLayer !== 'undefined' && heatData.length > 0) {
+                L.heatLayer(heatData, {
+                    radius: 35, 
+                    blur: 25, 
+                    maxZoom: 14,
+                    gradient: {0.4: 'yellow', 0.6: 'orange', 1.0: 'red'}
+                }).addTo(map);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.getElementById('theme-toggle').checked;
+            document.documentElement.classList.toggle('dark', isDark);
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        function setReportType(type) {
+            reportType = type;
+            document.getElementById('btn-daily').className = type === 'daily' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600 shadow-sm transition-all' : 'flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400 hover:border-slate-300 transition-all';
+            document.getElementById('btn-weekly').className = type === 'weekly' ? 'flex-1 p-4 border-2 border-blue-600 bg-blue-50 dark:bg-blue-900/20 rounded-2xl font-black text-xs text-blue-600 shadow-sm transition-all' : 'flex-1 p-4 border-2 rounded-2xl font-black text-xs text-slate-400 hover:border-slate-300 transition-all';
+            document.getElementById('weekly-info').classList.toggle('hidden', type !== 'weekly');
+        }
+
+        function generateInternalReport() {
+            const dateVal = document.getElementById('report-date').value;
+            if(!dateVal) return;
+            const selectedDate = new Date(dateVal);
+            if(reportType === 'weekly' && selectedDate.getDay() !== 1) {
+                document.getElementById('internal-report-results').innerHTML = `<div class="p-6 bg-rose-50 rounded-3xl text-center text-rose-600 font-bold text-xs">Bazar ertəsini seçin</div>`;
+                return;
+            }
+            let filtered = [];
+            if(reportType === 'daily') {
+                const targetStr = getFormattedDate(selectedDate.getTime());
+                filtered = allVisitsGlobal.filter(v => getFormattedDate(v.timestamp) === targetStr);
+            } else {
+                const startOfWeek = new Date(selectedDate);
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                filtered = allVisitsGlobal.filter(v => {
+                    const vDate = new Date(v.timestamp);
+                    return vDate >= startOfWeek && vDate <= endOfWeek;
+                });
+            }
+            const resultsDiv = document.getElementById('internal-report-results');
+            if(filtered.length === 0) {
+                resultsDiv.innerHTML = `<div class="p-6 bg-slate-50 dark:bg-slate-800 rounded-3xl text-center text-slate-400 font-bold text-xs shadow-inner">Məlumat tapılmadı</div>`;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-center shadow-sm hover:shadow-md transition-shadow">
+                            <p class="text-[8px] font-black text-blue-600 uppercase">Ziyarət</p>
+                            <h5 class="text-xl font-black text-blue-600">${filtered.length}</h5>
+                        </div>
+                        <div class="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl text-center shadow-sm hover:shadow-md transition-shadow">
+                            <p class="text-[8px] font-black text-emerald-600 uppercase">Ortalama</p>
+                            <h5 class="text-xl font-black text-emerald-600">${(filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0)}</h5>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function downloadReport() {
+            const rep = document.getElementById('report-rep-selector').value;
+            const data = rep ? allVisitsGlobal.filter(v => v.rep === rep) : allVisitsGlobal;
+            
+            if(data.length === 0) return alert("Məlumat tapılmadı!");
+
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '20px';
+            tempDiv.style.fontFamily = 'Inter, sans-serif';
+            tempDiv.style.color = '#1e293b';
+            
+            const title = rep ? `${rep} - Performans Hesabatı` : `Bütün Nümayəndələr - Performans Hesabatı`;
+            const avgScore = Math.round(data.reduce((sum, item) => sum + item.score, 0) / data.length);
+            
+            let tableHTML = `
+                <div style="text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h1 style="color: #3b82f6; margin: 0; font-size: 24px; font-weight: 800;">AZL TRAINING</h1>
+                    <h2 style="margin: 5px 0 0 0; font-size: 16px; color: #64748b;">${title}</h2>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Çıxarış tarixi: ${getFormattedDate(Date.now())} ${new Date().toLocaleTimeString('az-AZ')}</p>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 8px;">
+                    <div><strong>Ümumi Ziyarət:</strong> ${data.length}</div>
+                    <div><strong>Ortalama Bal:</strong> ${avgScore}</div>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                    <thead>
+                        <tr style="background-color: #3b82f6; color: white;">
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Tarix</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Nümayəndə</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Satış Nöqtəsi</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0;">Təlimçi</th>
+                            <th style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">Bal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.sort((a, b) => b.timestamp - a.timestamp).forEach((item, index) => {
+                const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                const scoreColor = item.score >= 80 ? '#10b981' : (item.score >= 60 ? '#f59e0b' : '#f43f5e');
+                tableHTML += `
+                    <tr style="background-color: ${bg};">
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${getFormattedDate(item.timestamp)}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${item.rep}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.code}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.trainer || 'Anonim'}</td>
+                        <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: ${scoreColor}">${item.score}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `</tbody></table>`;
+            tempDiv.innerHTML = tableHTML;
+            
+            const opt = {
+                margin:       10,
+                filename:     `AZL_Hesabat_${rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            const btn = document.querySelector('button[onclick="downloadReport()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>Hazırlanır...`;
+            btn.disabled = true;
+
+            html2pdf().from(tempDiv).set(opt).save().then(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }).catch(err => {
+                console.error(err);
+                alert("PDF yaradılarkən xəta baş verdi.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function openNewChecklist() { showSection('new-checklist-form'); renderForm(); }
+
+        function handleCheck(btn, type) {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => b.classList.remove('active-y', 'active-x'));
+            btn.classList.add(type === 'y' ? 'active-y' : 'active-x');
+        }
+
+        function setNoteValue(textareaId, value, status) {
+            const txt = document.getElementById(textareaId);
+            txt.value = value;
+            const parent = txt.parentElement;
+            parent.querySelectorAll('.note-btn').forEach(b => b.classList.remove('active-y', 'active-x'));
+            if(status === 'y') parent.querySelector('.btn-good').classList.add('active-y');
+            else parent.querySelector('.btn-bad').classList.add('active-x');
+        }
+
+        function renderForm() {
+            let h = "";
+            formSchema.forEach((group, index) => {
+                h += `<div class="glass-card p-6 md:p-8 hover:shadow-lg transition-shadow" data-group-index="${index}"><h3 class="font-black text-blue-600 mb-4 text-sm uppercase tracking-wider">${group.cat}</h3>`;
+                if(group.q) {
+                    group.q.forEach(q => {
+                        h += `
+                        <div class="flex justify-between items-center py-4 border-b border-slate-50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 -mx-4 px-4 rounded-xl transition-colors">
+                            <p class="font-bold text-xs pr-4">${q}</p>
+                            <div class="flex gap-2 shrink-0">
+                                <button onclick="handleCheck(this, 'y')" class="check-btn hover:border-emerald-400 hover:text-emerald-500 hover:shadow-sm transition-all"><i class="fa-solid fa-check"></i></button>
+                                <button onclick="handleCheck(this, 'x')" class="check-btn hover:border-rose-400 hover:text-rose-500 hover:shadow-sm transition-all"><i class="fa-solid fa-times"></i></button>
+                            </div>
+                        </div>`;
+                    });
+                }
+                if(group.hasNote) {
+                    h += `
+                    <div class="space-y-4 mt-4">
+                        <div class="flex gap-2">
+                            <button onclick="setNoteValue('${group.id}', '${group.goodLabel}', 'y')" class="note-btn btn-good flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn hover:border-emerald-400 hover:text-emerald-500 transition-all">${group.goodLabel}</button>
+                            <button onclick="setNoteValue('${group.id}', '${group.badLabel}', 'x')" class="note-btn btn-bad flex-1 p-3 border rounded-xl font-bold text-[10px] uppercase tracking-wider check-btn hover:border-rose-400 hover:text-rose-500 transition-all">${group.badLabel}</button>
+                        </div>
+                        <textarea id="${group.id}" placeholder="Əlavə qeyd (vacib deyil)..." class="w-full p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-transparent focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-slate-800 outline-none text-xs font-bold transition-all min-h-[80px]"></textarea>
+                    </div>`;
+                }
+                h += `</div>`;
+            });
+            document.getElementById('dynamic-questions').innerHTML = h;
+        }
+
+        function processAndSave() {
+            const code = document.getElementById('point-code-input').value.trim();
+            if (!code) return alert("Zəhmət olmasa Satış Nöqtəsi Kodunu daxil edin!");
+
+            const rep = document.getElementById('form-rep-selector').value;
+            const trainer = currentUser.fullName || currentUser.name || "Anonim Təlimçi";
+            
+            let totalScore = 0;
+            let catScores = [0, 0, 0, 0, 0]; 
+            let detailedAnswers = [];
+            let anyQuestionAnswered = false;
+
+            const groups = document.querySelectorAll('#dynamic-questions > .glass-card');
+            groups.forEach((group, index) => {
+                let groupDetails = { catIndex: index, answers: [], note: '' };
+                let yCount = 0;
+                
+                const rows = group.querySelectorAll('.flex.justify-between.items-center');
+                rows.forEach(row => {
+                    const hasY = row.querySelector('.active-y') !== null;
+                    const hasX = row.querySelector('.active-x') !== null;
+                    if(hasY || hasX) anyQuestionAnswered = true;
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
+                    if(hasY) yCount++;
+                });
+
+                const noteContainer = group.querySelector('.space-y-4.mt-4');
+                if (noteContainer) {
+                    const hasY = noteContainer.querySelector('.btn-good.active-y') !== null;
+                    const hasX = noteContainer.querySelector('.btn-bad.active-x') !== null;
+                    if(hasY || hasX) anyQuestionAnswered = true;
+                    groupDetails.answers.push(hasY ? 'y' : (hasX ? 'x' : '-'));
+                    groupDetails.note = noteContainer.querySelector('textarea').value || "";
+                    if(hasY) yCount++;
+                }
+
+                detailedAnswers.push(groupDetails);
+
+                let groupPoints = 0;
+                if (index < 5) {
+                    if (yCount >= 3) groupPoints = 10;
+                    else if (yCount === 2) groupPoints = 5;
+                    else groupPoints = 0;
+                    
+                    catScores[index] = groupPoints * 10;
+                } else {
+                    if (yCount === 1) groupPoints = 10;
+                    else groupPoints = 0;
+                }
+                
+                totalScore += groupPoints;
+            });
+
+            if (!anyQuestionAnswered) return alert("Sual və xanaları cavablandırmadan yadda saxlaya bilməzsiniz!");
+
+            const finalScore = totalScore;
+
+            const visit = { 
+                rep, 
+                trainer, 
+                code, 
+                score: finalScore, 
+                date: new Date().toLocaleDateString('az-AZ'), 
+                timestamp: Date.now(), 
+                catData: catScores, 
+                coords: currentCoords || "", 
+                details: detailedAnswers 
+            };
+
+            if (!navigator.onLine) {
+                let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
+                offlineData.push(visit);
+                localStorage.setItem('azl_offline_visits', JSON.stringify(offlineData));
+                
+                alert(`Oflayn Rejim! Məlumatlar cihazda yadda saxlanıldı (Nəticə: ${finalScore} Bal). İnternet bağlantısı bərpa olunduqda sistemə sinxronizasiya ediləcək.`);
+                
+                document.getElementById('point-code-input').value = '';
+                document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
+                document.querySelectorAll('textarea').forEach(el => el.value = '');
+                
+                showSection('dashboard');
+                return;
+            }
+
+            db.ref('visits').push(visit).then(() => {
+                alert(`Məlumatlar yadda saxlanıldı! Yekun Nəticə: ${finalScore} Bal`);
+                
+                document.getElementById('point-code-input').value = '';
+                document.querySelectorAll('.active-y, .active-x').forEach(el => el.classList.remove('active-y', 'active-x'));
+                document.querySelectorAll('textarea').forEach(el => el.value = '');
+                
+                showSection('dashboard');
+            }).catch(e => alert("Xəta baş verdi: " + e));
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    currentCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('geo-btn').innerHTML = "<i class='fa-solid fa-location-dot mr-2'></i> MƏKAN OK";
+                    document.getElementById('geo-btn').classList.add('bg-green-600', 'shadow-green-500/30');
+                }, () => alert("Məkan icazəsi alınmadı."));
+            }
+        }
+
+        function switchDashTab(tab) {
+            document.getElementById('dash-charts-content').classList.toggle('hidden', tab !== 'charts');
+            document.getElementById('dash-feed-content').classList.toggle('hidden', tab !== 'feed');
+            
+            const tabCharts = document.getElementById('tab-charts');
+            const tabFeed = document.getElementById('tab-feed');
+            
+            if(tab === 'charts') {
+                tabCharts.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all bg-white dark:bg-slate-700 text-blue-600 shadow-sm";
+                tabFeed.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200";
+            } else {
+                tabFeed.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all bg-white dark:bg-slate-700 text-blue-600 shadow-sm";
+                tabCharts.className = "px-6 py-2.5 rounded-xl text-xs font-black uppercase transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200";
+            }
+        }
+
+        let expandedChartInstance = null;
+        function openChartModal(chartId) {
+            document.getElementById('chart-modal').classList.remove('hidden');
+            renderExpandedChart(chartId);
+        }
+
+        function closeChartModal() {
+            document.getElementById('chart-modal').classList.add('hidden');
+            if(expandedChartInstance) expandedChartInstance.destroy();
+        }
+
+        function renderExpandedChart(chartId) {
+            const ctx = document.getElementById('expandedCanvas').getContext('2d');
+            if(expandedChartInstance) expandedChartInstance.destroy();
+
+            const selectedRep = document.getElementById('rep-selector').value;
+            const allVisits = [...allVisitsGlobal].sort((a,b) => b.timestamp - a.timestamp);
+            const filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
+
+            let type, data, options;
+
+            if(chartId === 'doughnutChart') {
+                document.getElementById('expanded-chart-title').innerText = "Nəticə Bölgüsü (Əla / Kafi / Zəif)";
+                let ela = 0, kafi = 0, zeif = 0;
+                filtered.forEach(v => {
+                    if(v.score >= 90) ela++;
+                    else if(v.score >= 70) kafi++;
+                    else zeif++;
+                });
+                type = 'doughnut';
+                data = {
+                    labels: ['Əla (90+)', 'Kafi (70-89)', 'Zəif (<70)'],
+                    datasets: [{ data: [ela, kafi, zeif], backgroundColor: ['#10b981', '#f59e0b', '#f43f5e'], borderWidth: 0, hoverOffset: 8 }]
+                };
+                options = { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, font: { size: 14 } } } } };
+            } else if(chartId === 'trendChart') {
+                document.getElementById('expanded-chart-title').innerText = "İnkişaf Dinamikası";
+                const chronological = [...filtered].reverse();
+                const trendDates = [], trendScores = [];
+                chronological.slice(-20).forEach(v => { 
+                    const d = new Date(v.timestamp);
+                    trendDates.push(`${d.getDate()}/${d.getMonth()+1}`);
+                    trendScores.push(v.score);
+                });
+                type = 'line';
+                data = {
+                    labels: trendDates.length ? trendDates : ['Yoxdur'],
+                    datasets: [{ label: 'İnkişaf Balı', data: trendScores.length ? trendScores : [0], borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderWidth: 4, tension: 0.4, fill: true, pointBackgroundColor: '#8b5cf6', pointRadius: 6, pointHoverRadius: 8 }]
+                };
+                options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } };
+            } else if(chartId === 'scatterChart') {
+                document.getElementById('expanded-chart-title').innerText = "Bilik Səviyyəsi və Təxmini Satış Həcmi Kəsişməsi";
+                const scatterData = filtered.map(v => {
+                    let simulatedSales = (v.score * 12) + (Math.random() * 400);
+                    return { x: v.score, y: simulatedSales, r: 10 };
+                });
+                type = 'bubble';
+                data = { datasets: [{ label: 'Nöqtələr (Bilik vs Satış)', data: scatterData.length ? scatterData : [{x:0, y:0, r:0}], backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: '#3b82f6', borderWidth: 2 }] };
+                options = {
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { display: false }, 
+                        tooltip: { 
+                            callbacks: { 
+                                label: function(context) { return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`; } 
+                            } 
+                        } 
+                    },
+                    scales: { 
+                        x: { title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 14, weight: 'bold' } }, min: 0, max: 100 }, 
+                        y: { title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 14, weight: 'bold' } }, beginAtZero: true } 
+                    }
+                };
+            }
+
+            expandedChartInstance = new Chart(ctx, { type, data, options });
+        }
+
+        window.onload = () => { 
+            const theme = localStorage.getItem('theme');
+            if(theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if(document.getElementById('theme-toggle')) document.getElementById('theme-toggle').checked = true;
+            }
+            if(currentUser) initApp(); 
+        };
+    </script>
+</body>
+</html>
