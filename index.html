@@ -46,7 +46,6 @@
             animation: gradientMove 15s ease infinite;
             color: #1e293b; 
             overflow-x: hidden; 
-            padding-bottom: 30px; /* Footer üçün boşluq */
         }
 
         .glass-card { backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 2rem; background: rgba(255, 255, 255, 0.85); transition: all 0.3s ease; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05); }
@@ -115,7 +114,7 @@
     </div>
 
     <div id="main-app" class="main-container min-h-screen w-full flex-row" style="display: none;">
-        <aside id="sidebar" class="bg-white border-r border-slate-200 h-full flex flex-col p-6 shrink-0 overflow-hidden">
+        <aside id="sidebar" class="bg-white border-r border-slate-200 h-full flex flex-col pt-6 px-6 shrink-0 overflow-hidden relative">
             <div class="mb-8 flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-1 cursor-pointer hover:scale-105 transition-transform" onclick="handleLogoClick()">
                     <img src="logo_only.png" alt="Logo" class="w-8 h-8 mr-2">
@@ -124,7 +123,7 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto pr-2 sidebar-scroll space-y-8">
+            <div class="flex-1 overflow-y-auto pr-2 sidebar-scroll space-y-8 pb-[100px]">
                 
                 <nav class="flex flex-col w-full gap-1">
                     <p class="text-[9px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Naviqasiya</p>
@@ -165,7 +164,7 @@
                 </div>
             </div>
 
-            <div class="mt-auto pt-6 shrink-0 border-t border-slate-100">
+            <div class="absolute bottom-0 left-0 right-0 p-6 pt-4 bg-white border-t border-slate-100 z-10">
                 <button onclick="openNewChecklist()" class="w-full bg-[#02117b] text-white py-4 rounded-2xl shadow-xl shadow-[#02117b]/30 font-black text-xs uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#02117b]/40 transition-all"><i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span></button>
             </div>
         </aside>
@@ -237,8 +236,8 @@
                             <h3 id="total-visits-stat" class="text-3xl md:text-4xl font-black slot-scroll">0</h3><i class="fa-solid fa-clipboard-check bg-icon"></i>
                         </div>
                         <div class="stat-card glass-card p-6 md:p-8 bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-rose-500/20 shadow-xl">
-                            <p class="text-[10px] font-black uppercase mb-2 text-rose-100" data-i18n="stat_trend">Təlim Mərkəzi</p>
-                            <h3 id="trend-stat" class="text-3xl md:text-4xl font-black">AZL</h3><i class="fa-solid fa-building-user bg-icon"></i>
+                            <p class="text-[10px] font-black uppercase mb-2 text-rose-100" data-i18n="stat_trend">SN test nəticəsi</p>
+                            <h3 id="trend-stat" class="text-3xl md:text-4xl font-black">0</h3><i class="fa-solid fa-building-user bg-icon"></i>
                         </div>
                     </div>
 
@@ -638,7 +637,7 @@
             </div>
 
             <!-- Yenilənmiş Səhifə Sonu Yazısı (Footer) -->
-            <div class="fixed bottom-0 right-0 p-2 text-[10px] font-bold text-slate-500 bg-white/90 backdrop-blur-md w-full md:w-[calc(100%-280px)] text-center border-t border-slate-200 z-50">
+            <div class="mt-auto p-6 text-[10px] font-bold text-slate-500 w-full text-center z-10 bg-transparent">
                 © Bu Dashboard Azərlotereya Təlim Komandası tərəfindən hazırlanmışdır 2026
             </div>
         </main>
@@ -713,10 +712,10 @@
         ];
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_reytinq: "Nümayəndə reytinqi", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "Təlim Mərkəzi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Nümayəndə seçimi", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı", start_date: "Başlanğıc", end_date: "Bitiş" },
-            tr: { nav_home: "Panel", nav_reytinq: "Temsilci Reytingi", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "Eğitim Merkezi", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Temsilci Seçimi", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı", start_date: "Başlangıç", end_date: "Bitiş" },
-            en: { nav_home: "Dashboard", nav_reytinq: "Rep Rankings", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "Training Center", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Select Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account", start_date: "Start Date", end_date: "End Date" },
-            ru: { nav_home: "Панель", nav_reytinq: "Рейтинг сотрудников", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Центр Обучения", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
+            az: { nav_home: "Dashboard", nav_reytinq: "Nümayəndə reytinqi", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "SN test nəticəsi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Nümayəndə seçimi", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı", start_date: "Başlanğıc", end_date: "Bitiş" },
+            tr: { nav_home: "Panel", nav_reytinq: "Temsilci Reytingi", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "SN test sonucu", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Temsilci Seçimi", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı", start_date: "Başlangıç", end_date: "Bitiş" },
+            en: { nav_home: "Dashboard", nav_reytinq: "Rep Rankings", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "SN test result", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Select Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account", start_date: "Start Date", end_date: "End Date" },
+            ru: { nav_home: "Панель", nav_reytinq: "Рейтинг сотрудников", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Результат SN теста", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
         };
 
         function getFormattedDate(timestamp) {
@@ -1593,7 +1592,7 @@
             const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
             if(!visit) return;
             
-            document.getElementById('modal-title').innerHTML = `<div class="flex items-center shrink-0 mr-4"><i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-slate-400 ml-2 bg-slate-200 px-2 py-1 rounded-lg">${visit.score} Bal</span></div> <button onclick="downloadVisitPDF()" class="no-print ml-auto bg-blue-100 text-blue-600 px-4 py-2 rounded-xl hover:bg-blue-200 transition-colors text-xs font-black flex items-center shadow-sm shrink-0"><i class="fa-solid fa-file-pdf mr-2"></i>PDF yüklə</button>`;
+            document.getElementById('modal-title').innerHTML = `<div class="flex items-center shrink-0 mr-4"><i class="fa-solid fa-store mr-2"></i>${visit.code} <span class="text-xs text-white ml-2 bg-red-600 px-2 py-1 rounded-lg">${visit.score} Bal</span></div> <button onclick="downloadVisitPDF()" class="no-print ml-auto bg-blue-100 text-blue-600 px-4 py-2 rounded-xl hover:bg-blue-200 transition-colors text-xs font-black flex items-center shadow-sm shrink-0"><i class="fa-solid fa-file-pdf mr-2"></i>PDF yüklə</button>`;
             
             let html = `<div class="flex flex-wrap gap-4 mb-4 text-xs font-bold text-slate-500">
                 <span><i class="fa-solid fa-user-tie mr-1"></i> ${visit.rep}</span>
