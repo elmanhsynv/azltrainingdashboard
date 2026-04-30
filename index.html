@@ -293,15 +293,15 @@
                                 <div class="flex-1 relative flex items-center justify-center"><canvas id="doughnutChart"></canvas></div>
                             </div>
                             <div class="glass-card p-4 md:p-8 h-[380px] flex flex-col hover:shadow-lg transition-shadow duration-300 relative group">
-                                <button onclick="openChartModal('trendChart')" class="absolute top-4 right-4 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
-                                <h3 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası</span></h3>
-                                <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
+                                <button onclick="openChartModal('radarChart')" class="absolute top-4 right-4 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
+                                <h3 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-widest" title="Kateqoriya Üzrə Ortalama Bilik"><i class="fa-solid fa-chart-area mr-2"></i>Kritik Səhvlər (Radar Analizi)</h3>
+                                <div class="flex-1 relative"><canvas id="radarChart"></canvas></div>
                             </div>
                         </div>
                         <div class="glass-card p-4 md:p-8 h-[400px] flex flex-col hover:shadow-lg transition-shadow duration-300 relative group">
-                            <button onclick="openChartModal('scatterChart')" class="absolute top-4 right-4 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
-                            <h3 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-widest" title="Bilik Səviyyəsi vs Simulyasiya Edilmiş Satış Həcmi"><i class="fa-solid fa-chart-scatter mr-2"></i>Bilik-Satış Kəsişməsi (Tam Genişlik)</h3>
-                            <div class="flex-1 relative"><canvas id="scatterChart"></canvas></div>
+                            <button onclick="openChartModal('trendChart')" class="absolute top-4 right-4 bg-white shadow-md w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity z-10"><i class="fa-solid fa-expand"></i></button>
+                            <h3 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-widest"><i class="fa-solid fa-arrow-trend-up mr-2"></i><span data-i18n="dash_trend">İnkişaf Dinamikası (Tam Genişlik)</span></h3>
+                            <div class="flex-1 relative"><canvas id="trendChart"></canvas></div>
                         </div>
                     </div>
 
@@ -696,7 +696,7 @@
         let currentUser = JSON.parse(localStorage.getItem('azl_user')) || null;
         let database = {}; 
         let allVisitsGlobal = []; 
-        let map, doughnutChart, trendChart, scatterChart;
+        let map, doughnutChart, trendChart, radarChart;
         let currentCoords = null;
         let currentLang = localStorage.getItem('azl_lang') || 'az';
         let reportType = 'daily';
@@ -724,10 +724,10 @@
         ];
 
         const trans = {
-            az: { nav_home: "Dashboard", nav_reytinq: "Nümayəndə reytinqi", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "SN test nəticəsi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Nümayəndə seçimi", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı", start_date: "Başlanğıc", end_date: "Bitiş" },
-            tr: { nav_home: "Panel", nav_reytinq: "Temsilci Reytingi", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "SN test sonucu", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Temsilci Seçimi", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı", start_date: "Başlangıç", end_date: "Bitiş" },
-            en: { nav_home: "Dashboard", nav_reytinq: "Rep Rankings", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "SN test result", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Select Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account", start_date: "Start Date", end_date: "End Date" },
-            ru: { nav_home: "Панель", nav_reytinq: "Рейтинг сотрудников", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Результат SN теста", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
+            az: { nav_home: "Dashboard", nav_reytinq: "Reytinq", nav_checklist: "Nəticələr", nav_visits: "Ziyarətlər", nav_settings: "Ayarlar", stat_avg: "Ortalama Bal", stat_last: "Ən Yüksək Bal", stat_count: "Ziyarət Sayı", stat_trend: "SN test nəticəsi", btn_quick_create: "Yeni Checklist", dash_title: "PERFORMANS ANALİZİ", input_code: "Satış Nöqtəsi Kodu:", btn_checkin: "Check-in", btn_save: "Saxla və Bitir", lang_selection: "Dil Seçimləri", internal_report: "Daxili Hesabatlar", rep_selection: "Hesabat Çıxarma (PDF)", all_reps: "Bütün Nümayəndələr", dash_leaderboard: "Nümayəndələrin Reytinqi", dash_cat_balance: "Kateqoriya Balansı", dash_dist: "Nəticə Bölgüsü", dash_trend: "İnkişaf Dinamikası", dash_feed: "Canlı Fəaliyyət", input_rep: "Nümayəndə seçimi", btn_download: "Hesabatı Yüklə", btn_daily: "Gündəlik hesabat", btn_weekly: "Həftəlik hesabat", date_select: "Tarix seçin", btn_logout: "Hesabdan çıxış", trainer_acc: "Təlimçi Hesabı", start_date: "Başlanğıc", end_date: "Bitiş" },
+            tr: { nav_home: "Panel", nav_reytinq: "Reyting", nav_checklist: "Sonuçlar", nav_visits: "Ziyaretler", nav_settings: "Ayarlar", stat_avg: "Ortalama Skor", stat_last: "En Yüksek Skor", stat_count: "Ziyaret Sayısı", stat_trend: "SN test sonucu", btn_quick_create: "Yeni Liste", dash_title: "EĞİTİM PANELİ", input_code: "Nokta Kodu:", btn_checkin: "Giriş Yap", btn_save: "Kaydet", lang_selection: "Dil Seçenekleri", internal_report: "İç Raporlar", rep_selection: "Rapor Al (PDF)", all_reps: "Tüm Temsilciler", dash_leaderboard: "Temsilci Sıralaması", dash_cat_balance: "Kategori Dengesi", dash_dist: "Sonuç Dağılımı", dash_trend: "Gelişim Dinamiği", dash_feed: "Canlı Akış", input_rep: "Temsilci Seçimi", btn_download: "Raporu İndir", btn_daily: "Günlük rapor", btn_weekly: "Haftalık rapor", date_select: "Tarih seçin", btn_logout: "Çıkış yap", trainer_acc: "Eğitmen Hesabı", start_date: "Başlangıç", end_date: "Bitiş" },
+            en: { nav_home: "Dashboard", nav_reytinq: "Rankings", nav_checklist: "Results", nav_visits: "Visits", nav_settings: "Settings", stat_avg: "Avg Score", stat_last: "Max Score", stat_count: "Visits", stat_trend: "SN test result", btn_quick_create: "New Checklist", dash_title: "TRAINING DASHBOARD", input_code: "Point Code:", btn_checkin: "Check-in", btn_save: "Save", lang_selection: "Language Settings", internal_report: "Internal Reports", rep_selection: "Export Report (PDF)", all_reps: "All Reps", dash_leaderboard: "Rep Leaderboard", dash_cat_balance: "Category Balance", dash_dist: "Score Distribution", dash_trend: "Growth Dynamics", dash_feed: "Live Activity", input_rep: "Select Rep:", btn_download: "Download Report", btn_daily: "Daily report", btn_weekly: "Weekly report", date_select: "Select date", btn_logout: "Logout", trainer_acc: "Trainer Account", start_date: "Start Date", end_date: "End Date" },
+            ru: { nav_home: "Панель", nav_reytinq: "Рейтинг", nav_checklist: "Результаты", nav_visits: "Визиты", nav_settings: "Настройки", stat_avg: "Средний балл", stat_last: "Макс. балл", stat_count: "Визиты", stat_trend: "Результат SN теста", btn_quick_create: "Создать", dash_title: "АНАЛИЗ ОБУЧЕНИЯ", input_code: "Код точки:", btn_checkin: "Чек-ин", btn_save: "Сохранить", lang_selection: "Выбор языка", internal_report: "Внутренние отчеты", rep_selection: "Извлечь отчет (PDF)", all_reps: "Все сотрудники", dash_leaderboard: "Рейтинг сотрудников", dash_cat_balance: "Баланс категорий", dash_dist: "Распределение результатов", dash_trend: "Динамика развития", dash_feed: "Живая активность", input_rep: "Выбор сотрудника", btn_download: "Скачать отчет", btn_daily: "Ежедневный отчет", btn_weekly: "Еженедельный отчет", date_select: "Выберите дату", btn_logout: "Выйти", trainer_acc: "Аккаунт тренера", start_date: "Начало", end_date: "Конец" }
         };
 
         function getFormattedDate(timestamp) {
@@ -736,6 +736,14 @@
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const y = dateObj.getFullYear();
             return `${d}-${m}-${y}`;
+        }
+        
+        function getSuffixDate() {
+            const d = new Date();
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yy = String(d.getFullYear()).slice(-2);
+            return `${dd}${mm}${yy}`;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -762,7 +770,6 @@
                 onChange: function() { generateInternalReport(); } 
             });
 
-            // Doğum tarixi inputu üçün flatpickr əlavə edildi
             flatpickr("#prof-birthdate", { 
                 ...fpConfig 
             });
@@ -851,7 +858,6 @@
             if(currentUser) {
                 document.getElementById('prof-fullname').value = currentUser.fullName || (currentUser.name + ' ' + (currentUser.surname || ''));
                 
-                // Flatpickr data yeniləmə
                 const bdInput = document.getElementById('prof-birthdate');
                 bdInput.value = currentUser.birthdate || '';
                 if(bdInput._flatpickr) {
@@ -1441,11 +1447,20 @@
         function updateCharts(filtered, allVisits) {
             const catNames = ['4+4', 'BeşdəBeş', 'Super Keno', 'Poz-qazan', 'Terminal'];
             const catIcons = ['fa-dice', 'fa-star', 'fa-gem', 'fa-ticket', 'fa-desktop'];
-            const catData = filtered.length ? filtered[0].catData : [0,0,0,0,0]; 
+            
+            // Re-calculate accurate averages for categories
+            let avgCatData = [0, 0, 0, 0, 0];
+            if (filtered.length > 0) {
+                let sums = [0, 0, 0, 0, 0];
+                filtered.forEach(v => {
+                    if(v.catData) v.catData.forEach((val, i) => sums[i] += val);
+                });
+                avgCatData = sums.map(sum => Math.round(sum / filtered.length));
+            }
             
             const catContainer = document.getElementById('category-bars-container');
             if(catContainer) {
-                catContainer.innerHTML = catData.map((score, idx) => {
+                catContainer.innerHTML = avgCatData.map((score, idx) => {
                     let colorClass = 'bg-blue-600';
                     if (score >= 90) colorClass = 'bg-emerald-500';
                     else if (score < 70) colorClass = 'bg-rose-500';
@@ -1522,47 +1537,36 @@
                 }
             });
 
-            const scatterData = filtered.map(v => {
-                let simulatedSales = (v.score * 12) + (Math.random() * 400); 
-                return { x: v.score, y: simulatedSales, r: 6 };
-            });
-
-            const ctxScatter = document.getElementById('scatterChart').getContext('2d');
-            if(scatterChart) scatterChart.destroy();
-            scatterChart = new Chart(ctxScatter, {
-                type: 'bubble',
+            const ctxRadar = document.getElementById('radarChart').getContext('2d');
+            if(radarChart) radarChart.destroy();
+            radarChart = new Chart(ctxRadar, {
+                type: 'radar',
                 data: {
+                    labels: catNames,
                     datasets: [{
-                        label: 'Nöqtələr (Bilik vs Satış)',
-                        data: scatterData.length ? scatterData : [{x:0, y:0, r:0}],
-                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                        label: 'Ortalama Bilik (%)',
+                        data: avgCatData.length ? avgCatData : [0,0,0,0,0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderColor: '#3b82f6',
-                        borderWidth: 1
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#3b82f6',
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`;
-                                }
-                            }
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false }
                         }
                     },
-                    scales: {
-                        x: { 
-                            title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 10, weight: 'bold' } },
-                            min: 0, max: 100 
-                        },
-                        y: { 
-                            title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 10, weight: 'bold' } },
-                            beginAtZero: true 
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
@@ -1600,11 +1604,11 @@
 
             const opt = {
                 margin:       10,
-                filename:     'Ziyaret_Neticesi.pdf',
+                filename:     `AZL_Checklist_Neticesi_${getSuffixDate()}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, windowHeight: element.scrollHeight },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                pagebreak:    { mode: ['css', 'legacy'] }
             };
             
             html2pdf().from(element).set(opt).save().then(() => {
@@ -1780,9 +1784,10 @@
             if(!dateVal) return;
             const selectedDate = new Date(dateVal);
             if(reportType === 'weekly' && selectedDate.getDay() !== 1) {
-                document.getElementById('internal-report-results').innerHTML = `<div class="p-6 bg-rose-50 rounded-3xl text-center text-rose-600 font-bold text-xs">Bazar ertəsini seçin</div>`;
+                document.getElementById('internal-report-results').innerHTML = `<div class="p-6 bg-rose-50 rounded-3xl text-center text-rose-600 font-bold text-xs">Həftəlik hesabat üçün Bazar ertəsini seçin</div>`;
                 return;
             }
+            
             let filtered = [];
             if(reportType === 'daily') {
                 const targetStr = getFormattedDate(selectedDate.getTime());
@@ -1796,21 +1801,52 @@
                     return vDate >= startOfWeek && vDate <= endOfWeek;
                 });
             }
+            
             const resultsDiv = document.getElementById('internal-report-results');
             if(filtered.length === 0) {
-                resultsDiv.innerHTML = `<div class="p-6 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold text-xs shadow-inner">Məlumat tapılmadı</div>`;
+                resultsDiv.innerHTML = `<div class="p-6 bg-slate-50 rounded-3xl text-center text-slate-400 font-bold text-xs shadow-inner">Bu tarixə uyğun məlumat tapılmadı</div>`;
             } else {
+                const avgScore = (filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0);
+                
+                let tableRows = filtered.sort((a,b)=>b.timestamp - a.timestamp).map(v => {
+                    let badge = v.score >= 90 ? 'bg-emerald-100 text-emerald-600' : (v.score >= 70 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600');
+                    return `
+                        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                            <td class="p-3 text-xs text-slate-600 font-medium">${getFormattedDate(v.timestamp)}</td>
+                            <td class="p-3 text-xs text-slate-800 font-bold">${v.rep}</td>
+                            <td class="p-3 text-xs text-slate-600">${v.code}</td>
+                            <td class="p-3 text-xs font-black text-center"><span class="px-2 py-1 rounded-md ${badge}">${v.score}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+
                 resultsDiv.innerHTML = `
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-blue-50 rounded-2xl text-center shadow-sm hover:shadow-md transition-shadow">
-                            <p class="text-[8px] font-black text-blue-600 uppercase">Ziyarət</p>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="p-4 bg-blue-50 rounded-2xl text-center shadow-sm">
+                            <p class="text-[8px] font-black text-blue-600 uppercase">Ümumi Ziyarət</p>
                             <h5 class="text-xl font-black text-blue-600">${filtered.length}</h5>
                         </div>
-                        <div class="p-4 bg-emerald-50 rounded-2xl text-center shadow-sm hover:shadow-md transition-shadow">
-                            <p class="text-[8px] font-black text-emerald-600 uppercase">Ortalama</p>
-                            <h5 class="text-xl font-black text-emerald-600">${(filtered.reduce((a,b)=>a+b.score,0)/filtered.length).toFixed(0)}</h5>
+                        <div class="p-4 bg-emerald-50 rounded-2xl text-center shadow-sm">
+                            <p class="text-[8px] font-black text-emerald-600 uppercase">Ortalama Bal</p>
+                            <h5 class="text-xl font-black text-emerald-600">${avgScore}</h5>
                         </div>
-                    </div>`;
+                    </div>
+                    <div class="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
+                                    <th class="p-3 font-black">Tarix</th>
+                                    <th class="p-3 font-black">Nümayəndə</th>
+                                    <th class="p-3 font-black">S.Nöqtəsi</th>
+                                    <th class="p-3 font-black text-center">Bal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             }
         }
 
@@ -1840,7 +1876,7 @@
                 </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
                     <thead>
-                        <tr style="background-color: #3b82f6; color: white;">
+                        <tr style="background-color: #3b82f6; color: white; page-break-inside: avoid;">
                             <th style="padding: 10px; border: 1px solid #e2e8f0;">Tarix</th>
                             <th style="padding: 10px; border: 1px solid #e2e8f0;">Nümayəndə</th>
                             <th style="padding: 10px; border: 1px solid #e2e8f0;">Satış Nöqtəsi</th>
@@ -1855,7 +1891,7 @@
                 const bg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
                 const scoreColor = item.score >= 80 ? '#10b981' : (item.score >= 60 ? '#f59e0b' : '#f43f5e');
                 tableHTML += `
-                    <tr style="background-color: ${bg};">
+                    <tr style="background-color: ${bg}; page-break-inside: avoid;">
                         <td style="padding: 10px; border: 1px solid #e2e8f0;">${getFormattedDate(item.timestamp)}</td>
                         <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: bold;">${item.rep}</td>
                         <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.code}</td>
@@ -1868,12 +1904,16 @@
             tableHTML += `</tbody></table>`;
             tempDiv.innerHTML = tableHTML;
             
+            const suffixFormat = getSuffixDate();
+            const repPart = rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler';
+
             const opt = {
                 margin:       10,
-                filename:     `AZL_Hesabat_${rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler'}.pdf`,
+                filename:     `AZL_Hesabat_${repPart}_${suffixFormat}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
             };
             
             const btn = document.querySelector('button[onclick="downloadReport()"]');
@@ -2111,28 +2151,33 @@
                     datasets: [{ label: 'İnkişaf Balı', data: trendScores.length ? trendScores : [0], borderColor: '#8b5cf6', backgroundColor: 'rgba(139, 92, 246, 0.1)', borderWidth: 4, tension: 0.4, fill: true, pointBackgroundColor: '#8b5cf6', pointRadius: 6, pointHoverRadius: 8 }]
                 };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } };
-            } else if(chartId === 'scatterChart') {
-                document.getElementById('expanded-chart-title').innerText = "Bilik Səviyyəsi və Təxmini Satış Həcmi Kəsişməsi";
-                const scatterData = filtered.map(v => {
-                    let simulatedSales = (v.score * 12) + (Math.random() * 400);
-                    return { x: v.score, y: simulatedSales, r: 10 };
-                });
-                type = 'bubble';
-                data = { datasets: [{ label: 'Nöqtələr (Bilik vs Satış)', data: scatterData.length ? scatterData : [{x:0, y:0, r:0}], backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: '#3b82f6', borderWidth: 2 }] };
+            } else if(chartId === 'radarChart') {
+                document.getElementById('expanded-chart-title').innerText = "Kateqoriya Üzrə Ortalama Bilik (Radar Analizi)";
+                let avgCatData = [0, 0, 0, 0, 0];
+                if (filtered.length > 0) {
+                    let sums = [0, 0, 0, 0, 0];
+                    filtered.forEach(v => {
+                        if(v.catData) v.catData.forEach((val, i) => sums[i] += val);
+                    });
+                    avgCatData = sums.map(sum => Math.round(sum / filtered.length));
+                }
+                type = 'radar';
+                data = {
+                    labels: ['4+4', 'BeşdəBeş', 'Super Keno', 'Poz-qazan', 'Terminal'],
+                    datasets: [{
+                        label: 'Ortalama Bilik (%)',
+                        data: avgCatData.length ? avgCatData : [0,0,0,0,0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.4)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#3b82f6',
+                        pointRadius: 5
+                    }]
+                };
                 options = {
-                    responsive: true, maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { 
-                            callbacks: { 
-                                label: function(context) { return `Bilik: ${context.raw.x} Bal | Təxm. Satış: ${context.raw.y.toFixed(0)} AZN`; } 
-                            } 
-                        } 
-                    },
-                    scales: { 
-                        x: { title: { display: true, text: 'Bilik Səviyyəsi (Bal)', font: { size: 14, weight: 'bold' } }, min: 0, max: 100 }, 
-                        y: { title: { display: true, text: 'Həftəlik Satış (AZN)', font: { size: 14, weight: 'bold' } }, beginAtZero: true } 
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { min: 0, max: 100, ticks: { stepSize: 20 } } },
+                    plugins: { legend: { display: false } }
                 };
             }
 
