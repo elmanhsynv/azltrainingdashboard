@@ -1944,13 +1944,13 @@
             const repPart = rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler';
 
             const opt = {
-                margin:       10,
-                filename:     `AZL_Hesabat_${repPart}_${suffixFormat}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['css', 'legacy'] }
-            };
+    margin:       [10, 10, 15, 10], // PDF boşluqları: [Yuxarı, Sağ, Aşağı, Sol]
+    filename:     `AZL_Hesabat_${repPart}_${suffixFormat}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowY: 0 }, // Xətanın həlli
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+};
             
             const btn = document.querySelector('button[onclick="downloadReport()"]');
             const originalText = btn.innerHTML;
