@@ -66,8 +66,20 @@
         .check-btn.active-x { background: #fee2e2; border-color: #f87171; color: #991b1b; }
 
         aside { position: sticky; top: 0; left: 0; height: 100vh; width: 280px; z-index: 40; flex-shrink: 0; }
+        
+        .sidebar-fixed-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 280px;
+            background-color: white;
+            z-index: 50;
+            border-top: 1px solid #f1f5f9;
+        }
+
         @media (max-width: 767px) {
             aside { width: 220px; }
+            .sidebar-fixed-btn { width: 220px; }
         }
 
         .feed-scroll::-webkit-scrollbar { width: 6px; }
@@ -164,7 +176,8 @@
                 </div>
             </div>
 
-            <div class="absolute bottom-0 left-0 right-0 p-6 pt-4 bg-white border-t border-slate-100 z-10">
+            <!-- Fixed düymə -->
+            <div class="sidebar-fixed-btn p-6 pt-4">
                 <button onclick="openNewChecklist()" class="w-full bg-[#02117b] text-white py-4 rounded-2xl shadow-xl shadow-[#02117b]/30 font-black text-xs uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#02117b]/40 transition-all"><i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist</span></button>
             </div>
         </aside>
@@ -309,7 +322,6 @@
                         </div>
                     </div>
 
-                    <!-- Panel Ən Aşağıya Sürüşdürüldü -->
                     <div class="glass-card p-6 md:p-8 border-l-4 border-indigo-500 shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-black text-indigo-600 text-xs uppercase tracking-widest"><i class="fa-solid fa-seedling mr-2"></i>Orientasiya və Adaptasiya İzləmə</h3>
@@ -538,7 +550,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Doğum Tarixi</label>
-                                    <input type="date" id="prof-birthdate" class="w-full p-4 rounded-xl border border-slate-200 font-bold text-xs outline-none focus:border-blue-500 transition-all">
+                                    <input type="text" id="prof-birthdate" placeholder="Tarix seçin" class="w-full p-4 rounded-xl border border-slate-200 font-bold text-xs outline-none cursor-pointer hover:border-blue-400 focus:border-blue-500 transition-all">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-2 tracking-widest">Şirkət</label>
@@ -749,6 +761,11 @@
                 ...fpConfig, 
                 onChange: function() { generateInternalReport(); } 
             });
+
+            // Doğum tarixi inputu üçün flatpickr əlavə edildi
+            flatpickr("#prof-birthdate", { 
+                ...fpConfig 
+            });
         });
 
         function handleLogoClick() {
@@ -830,11 +847,17 @@
 
         function logout() { localStorage.removeItem('azl_user'); location.reload(); }
 
-        // Yeni funksiyalar: Profil yükləmək və saxlamaq üçün
         function loadProfileData() {
             if(currentUser) {
                 document.getElementById('prof-fullname').value = currentUser.fullName || (currentUser.name + ' ' + (currentUser.surname || ''));
-                document.getElementById('prof-birthdate').value = currentUser.birthdate || '';
+                
+                // Flatpickr data yeniləmə
+                const bdInput = document.getElementById('prof-birthdate');
+                bdInput.value = currentUser.birthdate || '';
+                if(bdInput._flatpickr) {
+                    bdInput._flatpickr.setDate(currentUser.birthdate || '');
+                }
+
                 document.getElementById('prof-company').value = currentUser.company || '';
                 document.getElementById('prof-position').value = currentUser.position || '';
             }
@@ -859,7 +882,6 @@
                 currentUser.position = position;
                 localStorage.setItem('azl_user', JSON.stringify(currentUser));
                 
-                // UI məlumatlarını dərhal yeniləyək
                 document.getElementById('profile-name').innerText = fullName;
                 const parts = fullName.split(' ');
                 const initials = parts.length > 1 ? (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase() : parts[0].substring(0,2).toUpperCase();
