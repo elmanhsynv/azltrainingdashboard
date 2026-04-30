@@ -1610,41 +1610,53 @@
         }
 
         function downloadVisitPDF() {
-            const element = document.getElementById('visit-modal-content');
-            const body = document.getElementById('modal-body');
-            
-            const closeBtn = element.querySelector('button[onclick="closeVisitDetails()"]');
-            const downloadBtn = element.querySelector('button[onclick="downloadVisitPDF()"]');
-            
-            if(closeBtn) closeBtn.style.display = 'none';
-            if(downloadBtn) downloadBtn.style.display = 'none';
+    const element = document.getElementById('visit-modal-content');
+    const body = document.getElementById('modal-body');
+    
+    const closeBtn = element.querySelector('button[onclick="closeVisitDetails()"]');
+    const downloadBtn = element.querySelector('button[onclick="downloadVisitPDF()"]');
+    
+    if(closeBtn) closeBtn.style.display = 'none';
+    if(downloadBtn) downloadBtn.style.display = 'none';
 
-            const origHeight = element.style.height;
-            const origMaxHeight = element.style.maxHeight;
-            const origOverflow = body.style.overflowY;
+    // Əvvəlki orijinal ölçüləri yadda saxlayaq
+    const origHeight = element.style.height;
+    const origMaxHeight = element.style.maxHeight;
+    const origOverflow = body.style.overflowY;
+    const origWidth = element.style.width;          // YENİ
+    const origMaxWidth = element.style.maxWidth;    // YENİ
 
-            element.style.height = 'auto';
-            element.style.maxHeight = 'none';
-            body.style.overflowY = 'visible';
+    // Bütün məlumatın görünməsi üçün hündürlüyü açırıq
+    element.style.height = 'auto';
+    element.style.maxHeight = 'none';
+    body.style.overflowY = 'visible';
 
-            const opt = {
-                margin:       10,
-                filename:     `AZL_Checklist_Neticesi_${getSuffixDate()}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, windowHeight: element.scrollHeight },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['css', 'legacy'] }
-            };
-            
-            html2pdf().from(element).set(opt).save().then(() => {
-                if(closeBtn) closeBtn.style.display = 'flex';
-                if(downloadBtn) downloadBtn.style.display = 'flex';
-                
-                element.style.height = origHeight;
-                element.style.maxHeight = origMaxHeight;
-                body.style.overflowY = origOverflow;
-            });
-        }
+    // KİÇİLTMƏ HİYLƏSİ: Eni süni olaraq 900px edirik. 
+    // PDF bunu A4-ə sığdırmaq üçün avtomatik miqyası (scale) kiçildəcək və 2 səhifəyə yerləşdirəcək.
+    element.style.width = '900px';
+    element.style.maxWidth = '900px';
+
+    const opt = {
+        margin:       [5, 5, 5, 5], // Kənar boşluqları (margin) 10-dan 5-ə saldıq ki, yer çoxalsın
+        filename:     `AZL_Checklist_Neticesi_${getSuffixDate()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, windowHeight: element.scrollHeight, scrollY: 0 }, // scrollY: 0 əlavə edildi
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'] }
+    };
+    
+    html2pdf().from(element).set(opt).save().then(() => {
+        // PDF uğurla yükləndikdən sonra hər şeyi köhnə vəziyyətinə (orijinala) qaytarırıq
+        if(closeBtn) closeBtn.style.display = 'flex';
+        if(downloadBtn) downloadBtn.style.display = 'flex';
+        
+        element.style.height = origHeight;
+        element.style.maxHeight = origMaxHeight;
+        body.style.overflowY = origOverflow;
+        element.style.width = origWidth;            // YENİ
+        element.style.maxWidth = origMaxWidth;      // YENİ
+    });
+}
 
         function openVisitDetails(timestamp) {
             const visit = allVisitsGlobal.find(v => v.timestamp === timestamp);
