@@ -93,7 +93,7 @@
         .sidebar-scroll { scrollbar-width: thin; }
 
         /* WHATSAPP MÖVZUSU CHAT STİLLƏRİ */
-        .chat-bubble { max-width: 80%; padding: 8px 12px; font-size: 13px; position: relative; word-wrap: break-word; line-height: 1.5; border-radius: 8px; box-shadow: 0 1px 0.5px rgba(11,20,26,.13); }
+        .chat-bubble { max-width: 85%; padding: 8px 12px; font-size: 13px; position: relative; word-wrap: break-word; line-height: 1.5; border-radius: 8px; box-shadow: 0 1px 0.5px rgba(11,20,26,.13); }
         .chat-sent { background: #d9fdd3; color: #111b21; border-top-right-radius: 0; align-self: flex-end; }
         .chat-recv { background: #ffffff; color: #111b21; border-top-left-radius: 0; align-self: flex-start; }
         
@@ -691,10 +691,13 @@
                     </div>
                 </div>
 
-                <!-- DİNAMİK CHAT BÖLMƏSİ -->
-                <div id="chat" class="section-content">
-                    <div class="max-w-6xl mx-auto h-[80vh] min-h-[500px] glass-card flex flex-col md:flex-row overflow-hidden shadow-2xl relative">
-                        <div class="w-full md:w-1/3 border-r border-slate-200 bg-white/50 flex flex-col shrink-0">
+                <!-- DİNAMİK VƏ MOBİL OPTİMİZA EDİLMİŞ CHAT BÖLMƏSİ -->
+                <div id="chat" class="section-content h-full">
+                    <!-- Hündürlüyü dinamik tənzimləmək üçün h-[75vh] və flex istifadə edildi -->
+                    <div class="max-w-6xl mx-auto h-[75vh] min-h-[500px] glass-card flex overflow-hidden shadow-2xl relative w-full">
+                        
+                        <!-- Sol Tərəf: Kontaktlar (Mobildə tam ekran, Desktopda 1/3) -->
+                        <div id="chat-sidebar" class="w-full md:w-1/3 border-r border-slate-200 bg-white/50 flex flex-col shrink-0 h-full transition-all">
                             <div class="p-4 border-b border-slate-200 bg-slate-50/50">
                                 <h3 class="font-black text-[#128C7E] text-sm uppercase mb-3"><i class="fa-solid fa-comments mr-2"></i>Söhbətlər</h3>
                                 <div class="relative">
@@ -706,11 +709,17 @@
                                 <!-- Dinamik olaraq bura istifadəçilər yüklənəcək -->
                             </div>
                         </div>
-                        <div class="w-full md:w-2/3 flex flex-col bg-[#efeae2] relative h-[80vh] md:h-auto">
-                            <div class="p-3 border-b border-slate-200 bg-[#f0f2f5] flex items-center justify-between z-10">
-                                <div class="flex items-center gap-3">
-                                    <div id="chat-active-avatar" class="w-10 h-10 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black shadow-sm"><i class="fa-solid fa-users"></i></div>
-                                    <div>
+
+                        <!-- Sağ Tərəf: Söhbət Otağı (Mobildə başlanğıcda gizli, Desktopda 2/3) -->
+                        <div id="chat-main" class="w-full md:w-2/3 bg-[#efeae2] relative h-full hidden md:flex flex-col transition-all">
+                            <div class="p-3 border-b border-slate-200 bg-[#f0f2f5] flex items-center justify-between z-10 shrink-0">
+                                <div class="flex items-center gap-2">
+                                    <!-- YENİ: Mobildə geri qayıtmaq üçün düymə -->
+                                    <button onclick="closeMobileChat()" class="md:hidden text-slate-500 hover:text-[#00a884] px-2 py-1 transition-colors">
+                                        <i class="fa-solid fa-arrow-left text-lg"></i>
+                                    </button>
+                                    <div id="chat-active-avatar" class="w-10 h-10 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
+                                    <div class="ml-1">
                                         <h4 class="font-bold text-sm text-slate-800" id="chat-active-name">AZL Training</h4>
                                         <p class="text-[11px] text-[#00a884]" id="chat-typing-indicator" style="display:none;">yazır...</p>
                                     </div>
@@ -727,6 +736,7 @@
                                 <button onclick="sendChatMessage()" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#00a884] text-white flex items-center justify-center hover:bg-[#018e6f] transition-colors shrink-0 shadow-sm"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -786,7 +796,7 @@
         let reportType = 'daily';
 
         let typingTimeout = null;
-        let activeChatRoom = 'group'; // 'group' or specific 'room_id'
+        let activeChatRoom = 'group';
         let chatMessagesListener = null;
         let chatTypingListener = null;
         let registeredUsersMap = {};
@@ -894,7 +904,6 @@
             const surname = document.getElementById('reg-surname').value.trim();
             
             if(!phoneInput || !pass || !name) return alert("Məlumatları tam daxil edin.");
-
             const phoneKey = phoneInput.replace(/[^0-9+]/g, '');
             
             try {
@@ -959,14 +968,12 @@
             } catch(e) { alert("Xəta baş verdi: " + e.message); }
         }
 
-        // --- YENİ DİNAMİK CHAT FUNKSİYALARI ---
+        // --- YENİLƏNMİŞ MOBİL OPTİMİZA EDİLMİŞ CHAT FUNKSİYALARI ---
         function initChat() {
             if(!currentUser) return;
             loadChatUsers();
-            selectChatRoom('group'); // Default olaraq ümumi qrupu açır
+            selectChatRoom('group', false); // Başlanğıcda qrup açılır, amma mobil görünüşü tətikləməyə ehtiyac yoxdur
             
-            // Xəbərdarlıq badge-ni idarə etmək üçün bütün mesajları deyil, sadəcə oxunmamış statusları yoxlaya bilərik
-            // Amma hələlik sadə saxlayırıq.
             const inputEl = document.getElementById('chat-input');
             const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
 
@@ -1003,7 +1010,7 @@
                 </div>`;
 
                 Object.keys(users).forEach(key => {
-                    if(key === myPhoneKey) return; // Öz adımızı siyahıda göstərmirik
+                    if(key === myPhoneKey) return; 
                     const u = users[key];
                     const initials = u.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                     
@@ -1031,10 +1038,9 @@
             });
         }
 
-        function selectChatRoom(targetId) {
+        function selectChatRoom(targetId, userInitiated = true) {
             const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
             
-            // Köhnə dinləyiciləri bağlayırıq
             if(chatMessagesListener) chatMessagesListener.off();
             if(chatTypingListener) chatTypingListener.off();
 
@@ -1051,9 +1057,7 @@
                 const targetUser = registeredUsersMap[targetId];
                 if(!targetUser) return;
                 
-                // Şəxsi otaq ID-si yaratmaq (Həmişə eyni otaq çıxması üçün ID-ləri sort edirik)
                 activeChatRoom = [myPhoneKey, targetId].sort().join('_');
-                
                 document.getElementById('chat-active-name').innerText = targetUser.fullName;
                 const initials = targetUser.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 document.getElementById('chat-active-avatar').innerHTML = initials;
@@ -1064,14 +1068,19 @@
 
             highlightActiveContact(targetId);
 
-            // Mesajları dinlə
+            // YENİ: Mobildə istifadəçi siyahıdan kimisə seçibsə, söhbət panelinə keç
+            if(userInitiated && window.innerWidth < 768) {
+                document.getElementById('chat-sidebar').classList.add('hidden');
+                document.getElementById('chat-main').classList.remove('hidden');
+                document.getElementById('chat-main').classList.add('flex');
+            }
+
             chatMessagesListener = db.ref(msgsPath);
             chatMessagesListener.on('value', snap => {
                 renderChatMessages(snap.val() || {});
                 if(document.getElementById('chat').classList.contains('active')) markChatRead(msgsPath);
             });
 
-            // Yazır... bildirişini dinlə
             chatTypingListener = db.ref(typingPath);
             chatTypingListener.on('value', snap => {
                 const typingUsers = snap.val() || {};
@@ -1090,12 +1099,13 @@
                     indicator.style.display = 'none';
                 }
             });
-            
-            // Mobil görünüşdə sağ paneli göstərmək üçün
-            if(window.innerWidth < 768) {
-                // Əgər spesifik bir mobil tərtibat olsaydı, burada solu gizlədib sağı göstərərdik.
-                // İndi sadəcə scrollu düzəldirik.
-            }
+        }
+
+        // YENİ: Mobildə söhbətdən geri (kontakt siyahısına) qayıtmaq üçün funksiya
+        window.closeMobileChat = function() {
+            document.getElementById('chat-sidebar').classList.remove('hidden');
+            document.getElementById('chat-main').classList.add('hidden');
+            document.getElementById('chat-main').classList.remove('flex');
         }
 
         function highlightActiveContact(targetId = null) {
@@ -1175,7 +1185,6 @@
                 
                 const initials = msg.senderName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 
-                // Group messages from the same sender
                 const prevMsg = index > 0 ? msgs[index - 1] : null;
                 const showAvatar = !isMine && (!prevMsg || prevMsg.senderKey !== msg.senderKey);
 
@@ -2145,7 +2154,13 @@
                 gTitleContainer.style.display = 'block';
                 hFilterContainer.style.display = 'none';
                 
-                // Chat bölməsinə keçəndə aktiv otaqdakı mesajları oxunmuş olaraq işarələ
+                // MOBİL YENİLƏNƏNDƏ DEFAULT OLARAQ SİYAHINI GÖSTƏR
+                if(window.innerWidth < 768) {
+                    document.getElementById('chat-sidebar').classList.remove('hidden');
+                    document.getElementById('chat-main').classList.add('hidden');
+                    document.getElementById('chat-main').classList.remove('flex');
+                }
+
                 const msgsPath = activeChatRoom === 'group' ? 'chat/messages' : `chat/private/${activeChatRoom}/messages`;
                 markChatRead(msgsPath);
                 
