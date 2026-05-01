@@ -720,6 +720,7 @@
                                     <div id="chat-active-avatar" class="w-10 h-10 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
                                     <div class="ml-1">
                                         <h4 class="font-bold text-sm text-slate-800" id="chat-active-name">AZL Training</h4>
+                                        <p class="text-[11px] font-medium text-slate-500" id="chat-active-status" style="display:none;"></p>
                                         <p class="text-[11px] text-[#00a884]" id="chat-typing-indicator" style="display:none;">yazır...</p>
                                     </div>
                                 </div>
@@ -866,6 +867,45 @@
             return `${dd}${mm}${yy}`;
         }
 
+        function formatLastSeen(timestamp) {
+            if(!timestamp) return "Uzun müddətdir offline";
+            const date = new Date(timestamp);
+            const now = new Date();
+            const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+            const timeStr = date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0');
+            if (isToday) return "Bugün " + timeStr;
+            const y = date.getDate().toString().padStart(2,'0') + '.' + (date.getMonth()+1).toString().padStart(2,'0') + '.' + date.getFullYear();
+            return y + " " + timeStr;
+        }
+
+        function updateActiveUserStatus(targetUser) {
+            const statusEl = document.getElementById('chat-active-status');
+            if (!targetUser) return;
+            if (targetUser.status === 'online') {
+                statusEl.innerHTML = '<span class="text-emerald-500 font-bold">Online</span>';
+            } else {
+                statusEl.innerHTML = 'Son görülmə: ' + formatLastSeen(targetUser.lastSeen);
+            }
+        }
+
+        function setupPresence() {
+            if (!currentUser) return;
+            const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
+            const userStatusRef = db.ref('users/' + myPhoneKey);
+            db.ref('.info/connected').on('value', function(snapshot) {
+                if (snapshot.val() === false) return;
+                userStatusRef.onDisconnect().update({
+                    status: 'offline',
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP
+                }).then(function() {
+                    userStatusRef.update({
+                        status: 'online',
+                        lastSeen: firebase.database.ServerValue.TIMESTAMP
+                    });
+                });
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const fpConfig = { dateFormat: "Y-m-d", altInput: true, altFormat: "d-m-Y", locale: "az", disableMobile: true };
             flatpickr("#global-start-date, #global-end-date", { ...fpConfig, onChange: function() { updateDashboard(); } });
@@ -938,7 +978,21 @@
             } catch(e) { alert("Bağlantı xətası: " + e.message); }
         }
 
-        function logout() { localStorage.removeItem('azl_user'); location.reload(); }
+        function logout() { 
+            if(currentUser) {
+                const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
+                db.ref('users/' + myPhoneKey).update({
+                    status: 'offline',
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    localStorage.removeItem('azl_user'); 
+                    location.reload(); 
+                });
+            } else {
+                localStorage.removeItem('azl_user'); 
+                location.reload(); 
+            }
+        }
 
         function loadProfileData() {
             if(currentUser) {
@@ -973,15 +1027,12 @@
             } catch(e) { alert("Xəta baş verdi: " + e.message); }
         }
 
-        // --- YENİ ÇATI SİLMƏK FUNKSİYASI ---
         window.clearChatConfirm = function() {
             const roomName = document.getElementById('chat-active-name').innerText;
             if(confirm(`${roomName} ilə olan bütün mesajları silmək istədiyinizə əminsiniz?\n\nBu əməliyyat geri qaytarıla bilməz və mesajlar hər iki tərəf üçün silinəcək.`)) {
                 const msgsPath = activeChatRoom === 'group' ? 'chat/messages' : `chat/private/${activeChatRoom}/messages`;
                 
                 db.ref(msgsPath).remove().then(() => {
-                    // Mesajlar silindikdə ekran onsuzda real-time təmizlənəcək, 
-                    // amma vizual olaraq məlumat veririk.
                     document.getElementById('chat-messages').innerHTML = `
                         <div class="text-center w-full"><span class="bg-[#ffeecd] px-3 py-1.5 rounded-lg text-[11px] text-slate-700 shadow-sm"><i class="fa-solid fa-lock mr-1 text-[10px]"></i> Mesajlar ucdan-uca şifrələnir.</span></div>
                         <p class="text-xs text-slate-400 text-center mt-4 italic"><i class="fa-solid fa-trash-can mr-1"></i>Söhbət keçmişi təmizləndi.</p>
@@ -1023,7 +1074,7 @@
                 const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
                 
                 let html = `<div onclick="selectChatRoom('group')" id="chat-btn-group" class="p-3 bg-[#f0f2f5] rounded-xl flex items-center gap-3 cursor-pointer mb-2 contact-btn group-chat-btn">
-                    <div class="w-12 h-12 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
+                    <div class="relative w-12 h-12 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
                     <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
                         <div class="font-bold text-slate-800 text-sm truncate">AZL Training</div>
                         <div class="text-[11px] text-slate-500 truncate">Ümumi qrup mesajları</div>
@@ -1035,8 +1086,11 @@
                     const u = users[key];
                     const initials = u.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                     
+                    const isOnline = u.status === 'online';
+                    const statusDot = isOnline ? '<span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>' : '';
+                    
                     html += `<div onclick="selectChatRoom('${key}')" id="chat-btn-${key}" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 cursor-pointer transition-colors mb-1 contact-btn user-chat-btn" data-name="${u.fullName.toLowerCase()}">
-                        <div class="w-12 h-12 rounded-full bg-slate-300 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">${initials}</div>
+                        <div class="relative w-12 h-12 rounded-full bg-slate-300 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">${initials}${statusDot}</div>
                         <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
                             <div class="font-bold text-slate-800 text-sm truncate">${u.fullName}</div>
                             <div class="text-[11px] text-slate-500 truncate">${u.position || 'İstifadəçi'}</div>
@@ -1046,6 +1100,13 @@
                 
                 document.getElementById('chat-contact-list').innerHTML = html;
                 highlightActiveContact();
+                
+                if (activeChatRoom !== 'group' && activeChatRoom !== null) {
+                    const targetId = activeChatRoom.replace(myPhoneKey, '').replace('_', '');
+                    if (users[targetId]) {
+                        updateActiveUserStatus(users[targetId]);
+                    }
+                }
             });
         }
 
@@ -1072,6 +1133,7 @@
                 activeChatRoom = 'group';
                 document.getElementById('chat-active-name').innerText = "AZL Training";
                 document.getElementById('chat-active-avatar').innerHTML = '<i class="fa-solid fa-users"></i>';
+                document.getElementById('chat-active-status').style.display = 'none';
                 msgsPath = 'chat/messages';
                 typingPath = 'chat/typing';
             } else {
@@ -1082,6 +1144,9 @@
                 document.getElementById('chat-active-name').innerText = targetUser.fullName;
                 const initials = targetUser.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
                 document.getElementById('chat-active-avatar').innerHTML = initials;
+                
+                document.getElementById('chat-active-status').style.display = 'block';
+                updateActiveUserStatus(targetUser);
                 
                 msgsPath = `chat/private/${activeChatRoom}/messages`;
                 typingPath = `chat/private/${activeChatRoom}/typing`;
@@ -1105,6 +1170,7 @@
             chatTypingListener.on('value', snap => {
                 const typingUsers = snap.val() || {};
                 const indicator = document.getElementById('chat-typing-indicator');
+                const statusEl = document.getElementById('chat-active-status');
                 const typerNames = [];
                 Object.keys(typingUsers).forEach(key => {
                     if(key !== myPhoneKey && typingUsers[key].isTyping) {
@@ -1115,8 +1181,10 @@
                 if(typerNames.length > 0) {
                     indicator.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div> <span class="ml-1">${typerNames.join(', ')} yazır...</span>`;
                     indicator.style.display = 'flex';
+                    if(activeChatRoom !== 'group') statusEl.style.display = 'none';
                 } else {
                     indicator.style.display = 'none';
+                    if(activeChatRoom !== 'group') statusEl.style.display = 'block';
                 }
             });
         }
@@ -1271,6 +1339,7 @@
             });
 
             initChat(); 
+            setupPresence();
             applyTrans();
         }
 
