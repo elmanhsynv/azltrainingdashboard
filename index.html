@@ -92,7 +92,7 @@
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll { scrollbar-width: thin; }
 
-        /* YENİ CHAT STİLLƏRİ - WHATSAPP MÖVZUSU */
+        /* WHATSAPP MÖVZUSU CHAT STİLLƏRİ */
         .chat-bubble { max-width: 80%; padding: 8px 12px; font-size: 13px; position: relative; word-wrap: break-word; line-height: 1.5; border-radius: 8px; box-shadow: 0 1px 0.5px rgba(11,20,26,.13); }
         .chat-sent { background: #d9fdd3; color: #111b21; border-top-right-radius: 0; align-self: flex-end; }
         .chat-recv { background: #ffffff; color: #111b21; border-top-left-radius: 0; align-self: flex-start; }
@@ -102,6 +102,8 @@
         .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
         .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        .contact-active { background-color: #f0f2f5 !important; border-left: 4px solid #128C7E; }
     </style>
 </head>
 <body class="flex min-h-screen flex-row">
@@ -149,7 +151,6 @@
                     <button onclick="showSection('reytinq')" id="nav-reytinq" class="nav-btn"><i class="fa-solid fa-ranking-star w-5"></i> <span data-i18n="nav_reytinq">Reytinq</span></button>
                     <button onclick="showSection('checklist')" id="nav-checklist" class="nav-btn"><i class="fa-solid fa-square-poll-vertical w-5"></i> <span data-i18n="nav_checklist">Nəticələr</span></button>
                     <button onclick="showSection('ziyaretler')" id="nav-visits" class="nav-btn"><i class="fa-solid fa-map-location-dot w-5"></i> <span data-i18n="nav_visits">Ziyarətlər</span></button>
-                    <!-- YENİ: Söhbət Menyu Düyməsi -->
                     <button onclick="showSection('chat')" id="nav-chat" class="nav-btn relative"><i class="fa-solid fa-comments w-5"></i> <span data-i18n="nav_chat">Söhbət</span><span id="chat-badge" class="hidden absolute right-3 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span><span id="chat-badge-solid" class="hidden absolute right-3 w-2 h-2 bg-rose-500 rounded-full"></span></button>
                     <button onclick="showSection('ayarlar')" id="nav-settings" class="nav-btn"><i class="fa-solid fa-sliders w-5"></i> <span data-i18n="nav_settings">Ayarlar</span></button>
                 </nav>
@@ -690,7 +691,7 @@
                     </div>
                 </div>
 
-                <!-- YENİ: Söhbət Bölməsi (Chat Section) -->
+                <!-- DİNAMİK CHAT BÖLMƏSİ -->
                 <div id="chat" class="section-content">
                     <div class="max-w-6xl mx-auto h-[80vh] min-h-[500px] glass-card flex flex-col md:flex-row overflow-hidden shadow-2xl relative">
                         <div class="w-full md:w-1/3 border-r border-slate-200 bg-white/50 flex flex-col shrink-0">
@@ -698,31 +699,17 @@
                                 <h3 class="font-black text-[#128C7E] text-sm uppercase mb-3"><i class="fa-solid fa-comments mr-2"></i>Söhbətlər</h3>
                                 <div class="relative">
                                     <i class="fa-solid fa-search absolute left-3 top-3.5 text-slate-400 text-xs"></i>
-                                    <input type="text" placeholder="Axtarış və ya yeni şəxsi mesaj..." class="w-full py-3 pl-8 pr-3 rounded-xl bg-slate-100 border-none outline-none focus:ring-2 focus:ring-[#00a884] text-xs font-bold transition-all">
+                                    <input type="text" id="chat-search-input" onkeyup="filterChatUsers()" placeholder="Axtarış və ya yeni şəxsi mesaj..." class="w-full py-3 pl-8 pr-3 rounded-xl bg-slate-100 border-none outline-none focus:ring-2 focus:ring-[#00a884] text-xs font-bold transition-all">
                                 </div>
                             </div>
-                            <div class="flex-1 overflow-y-auto chat-scroll p-2">
-                                <div class="p-3 bg-[#f0f2f5] rounded-xl flex items-center gap-3 cursor-pointer mb-2">
-                                    <div class="w-12 h-12 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
-                                    <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
-                                        <div class="font-bold text-slate-800 text-sm truncate">AZL Training</div>
-                                        <div class="text-[11px] text-slate-500 truncate">Qrupa daxil oldunuz...</div>
-                                    </div>
-                                </div>
-                                <!-- Nümunə şəxsi mesaj kontaktı -->
-                                <div class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 cursor-pointer transition-colors mb-1">
-                                    <div class="w-12 h-12 rounded-full bg-slate-300 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0"><i class="fa-solid fa-user-tie"></i></div>
-                                    <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
-                                        <div class="font-bold text-slate-800 text-sm truncate">Supervayzer</div>
-                                        <div class="text-[11px] text-slate-500 truncate">Şəxsi mesajlaşmaq üçün toxunun...</div>
-                                    </div>
-                                </div>
+                            <div id="chat-contact-list" class="flex-1 overflow-y-auto chat-scroll p-2">
+                                <!-- Dinamik olaraq bura istifadəçilər yüklənəcək -->
                             </div>
                         </div>
                         <div class="w-full md:w-2/3 flex flex-col bg-[#efeae2] relative h-[80vh] md:h-auto">
                             <div class="p-3 border-b border-slate-200 bg-[#f0f2f5] flex items-center justify-between z-10">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black shadow-sm"><i class="fa-solid fa-users"></i></div>
+                                    <div id="chat-active-avatar" class="w-10 h-10 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black shadow-sm"><i class="fa-solid fa-users"></i></div>
                                     <div>
                                         <h4 class="font-bold text-sm text-slate-800" id="chat-active-name">AZL Training</h4>
                                         <p class="text-[11px] text-[#00a884]" id="chat-typing-indicator" style="display:none;">yazır...</p>
@@ -799,6 +786,10 @@
         let reportType = 'daily';
 
         let typingTimeout = null;
+        let activeChatRoom = 'group'; // 'group' or specific 'room_id'
+        let chatMessagesListener = null;
+        let chatTypingListener = null;
+        let registeredUsersMap = {};
 
         window.addEventListener('online', () => {
             let offlineData = JSON.parse(localStorage.getItem('azl_offline_visits') || '[]');
@@ -861,52 +852,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const fpConfig = {
-                dateFormat: "Y-m-d", 
-                altInput: true,
-                altFormat: "d-m-Y", 
-                locale: "az",
-                disableMobile: true 
-            };
-
-            flatpickr("#global-start-date, #global-end-date", { 
-                ...fpConfig, 
-                onChange: function() { updateDashboard(); } 
-            });
-
-            flatpickr("#reytinq-start-date, #reytinq-end-date", { 
-                ...fpConfig, 
-                onChange: function() { updateReytinqPage(); } 
-            });
-
-            flatpickr("#checklist-start-date, #checklist-end-date", { 
-                ...fpConfig, 
-                onChange: function() { updateChecklistFilters(); } 
-            });
-
-            flatpickr("#report-date", { 
-                ...fpConfig, 
-                onChange: function() { generateInternalReport(); } 
-            });
-
-            flatpickr("#prof-birthdate", { 
-                ...fpConfig 
-            });
+            const fpConfig = { dateFormat: "Y-m-d", altInput: true, altFormat: "d-m-Y", locale: "az", disableMobile: true };
+            flatpickr("#global-start-date, #global-end-date", { ...fpConfig, onChange: function() { updateDashboard(); } });
+            flatpickr("#reytinq-start-date, #reytinq-end-date", { ...fpConfig, onChange: function() { updateReytinqPage(); } });
+            flatpickr("#checklist-start-date, #checklist-end-date", { ...fpConfig, onChange: function() { updateChecklistFilters(); } });
+            flatpickr("#report-date", { ...fpConfig, onChange: function() { generateInternalReport(); } });
+            flatpickr("#prof-birthdate", { ...fpConfig });
         });
 
         function handleLogoClick() {
             const currentSection = document.querySelector('.section-content.active');
-            if (currentSection && currentSection.id === 'dashboard') {
-                location.reload();
-            } else {
-                showSection('dashboard');
-            }
+            if (currentSection && currentSection.id === 'dashboard') location.reload();
+            else showSection('dashboard');
         }
 
-        function toggleAccordion(id) {
-            const content = document.getElementById('reports-content');
-            content.classList.toggle('hidden');
-        }
+        function toggleAccordion(id) { document.getElementById('reports-content').classList.toggle('hidden'); }
 
         function applyTrans() {
             document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -941,10 +901,7 @@
                 await db.ref('users/' + phoneKey).set({ name, surname, phone: phoneInput, pass, fullName: name + ' ' + surname });
                 alert("Qeydiyyat tamamlandı!"); 
                 toggleAuth(true);
-            } catch(e) { 
-                console.error("Firebase Qeydiyyat Xətası:", e);
-                alert("Sistem xətası: " + e.message); 
-            }
+            } catch(e) { alert("Sistem xətası: " + e.message); }
         }
 
         async function handleLogin() {
@@ -952,7 +909,6 @@
             const pass = document.getElementById('login-pass').value;
             
             if(!phoneInput || !pass) return alert("Nömrə və şifrəni daxil edin.");
-
             const phoneKey = phoneInput.replace(/[^0-9+]/g, '');
 
             try {
@@ -965,10 +921,7 @@
                 } else {
                     alert("Məlumatlar yanlışdır. Şifrə və nömrə səhvdir.");
                 }
-            } catch(e) { 
-                console.error("Firebase Giriş Xətası:", e);
-                alert("Bağlantı xətası: " + e.message + "\n(Böyük ehtimalla Firebase Rules bloklayıb)"); 
-            }
+            } catch(e) { alert("Bağlantı xətası: " + e.message); }
         }
 
         function logout() { localStorage.removeItem('azl_user'); location.reload(); }
@@ -976,13 +929,9 @@
         function loadProfileData() {
             if(currentUser) {
                 document.getElementById('prof-fullname').value = currentUser.fullName || (currentUser.name + ' ' + (currentUser.surname || ''));
-                
                 const bdInput = document.getElementById('prof-birthdate');
                 bdInput.value = currentUser.birthdate || '';
-                if(bdInput._flatpickr) {
-                    bdInput._flatpickr.setDate(currentUser.birthdate || '');
-                }
-
+                if(bdInput._flatpickr) bdInput._flatpickr.setDate(currentUser.birthdate || '');
                 document.getElementById('prof-company').value = currentUser.company || '';
                 document.getElementById('prof-position').value = currentUser.position || '';
             }
@@ -997,14 +946,8 @@
             
             const phoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
             try {
-                await db.ref('users/' + phoneKey).update({
-                    fullName, birthdate, company, position
-                });
-                
-                currentUser.fullName = fullName;
-                currentUser.birthdate = birthdate;
-                currentUser.company = company;
-                currentUser.position = position;
+                await db.ref('users/' + phoneKey).update({ fullName, birthdate, company, position });
+                currentUser.fullName = fullName; currentUser.birthdate = birthdate; currentUser.company = company; currentUser.position = position;
                 localStorage.setItem('azl_user', JSON.stringify(currentUser));
                 
                 document.getElementById('profile-name').innerText = fullName;
@@ -1012,36 +955,125 @@
                 const initials = parts.length > 1 ? (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase() : parts[0].substring(0,2).toUpperCase();
                 document.getElementById('profile-initials').innerText = initials || "AZ";
                 document.getElementById('welcome-message').innerText = `XOŞ GƏLDİN, ${parts[0].toUpperCase()}!`;
-                
                 alert("Profil məlumatları yeniləndi!");
-            } catch(e) {
-                alert("Xəta baş verdi: " + e.message);
-            }
+            } catch(e) { alert("Xəta baş verdi: " + e.message); }
         }
 
-        // --- YENİ CHAT FUNKSİYALARI ---
+        // --- YENİ DİNAMİK CHAT FUNKSİYALARI ---
         function initChat() {
             if(!currentUser) return;
-            const messagesRef = db.ref('chat/messages');
-            const typingRef = db.ref('chat/typing');
+            loadChatUsers();
+            selectChatRoom('group'); // Default olaraq ümumi qrupu açır
+            
+            // Xəbərdarlıq badge-ni idarə etmək üçün bütün mesajları deyil, sadəcə oxunmamış statusları yoxlaya bilərik
+            // Amma hələlik sadə saxlayırıq.
+            const inputEl = document.getElementById('chat-input');
             const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
 
-            messagesRef.on('value', snap => {
-                const msgs = snap.val() || {};
-                renderChatMessages(msgs);
+            inputEl.addEventListener('input', function() {
+                const typingPath = activeChatRoom === 'group' ? 'chat/typing/' + myPhoneKey : `chat/private/${activeChatRoom}/typing/${myPhoneKey}`;
+                db.ref(typingPath).set({ isTyping: true, name: currentUser.fullName || currentUser.name });
                 
-                const hasUnread = Object.values(msgs).some(m => m.senderKey !== myPhoneKey && m.status !== 'read');
-                if (document.getElementById('chat').classList.contains('active')) {
-                    markChatRead();
-                    document.getElementById('chat-badge').classList.add('hidden');
-                    document.getElementById('chat-badge-solid').classList.add('hidden');
-                } else if (hasUnread) {
-                    document.getElementById('chat-badge').classList.remove('hidden');
-                    document.getElementById('chat-badge-solid').classList.remove('hidden');
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    db.ref(typingPath).set({ isTyping: false });
+                }, 2000);
+            });
+            
+            inputEl.addEventListener('keypress', function(e) {
+                if(e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendChatMessage();
                 }
             });
+        }
 
-            typingRef.on('value', snap => {
+        function loadChatUsers() {
+            db.ref('users').on('value', snap => {
+                const users = snap.val() || {};
+                registeredUsersMap = users;
+                const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
+                
+                let html = `<div onclick="selectChatRoom('group')" id="chat-btn-group" class="p-3 bg-[#f0f2f5] rounded-xl flex items-center gap-3 cursor-pointer mb-2 contact-btn group-chat-btn">
+                    <div class="w-12 h-12 rounded-full bg-[#128C7E] text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0"><i class="fa-solid fa-users"></i></div>
+                    <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
+                        <div class="font-bold text-slate-800 text-sm truncate">AZL Training</div>
+                        <div class="text-[11px] text-slate-500 truncate">Ümumi qrup mesajları</div>
+                    </div>
+                </div>`;
+
+                Object.keys(users).forEach(key => {
+                    if(key === myPhoneKey) return; // Öz adımızı siyahıda göstərmirik
+                    const u = users[key];
+                    const initials = u.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                    
+                    html += `<div onclick="selectChatRoom('${key}')" id="chat-btn-${key}" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 cursor-pointer transition-colors mb-1 contact-btn user-chat-btn" data-name="${u.fullName.toLowerCase()}">
+                        <div class="w-12 h-12 rounded-full bg-slate-300 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">${initials}</div>
+                        <div class="flex-1 min-w-0 border-b border-slate-100 pb-2">
+                            <div class="font-bold text-slate-800 text-sm truncate">${u.fullName}</div>
+                            <div class="text-[11px] text-slate-500 truncate">${u.position || 'İstifadəçi'}</div>
+                        </div>
+                    </div>`;
+                });
+                
+                document.getElementById('chat-contact-list').innerHTML = html;
+                highlightActiveContact();
+            });
+        }
+
+        function filterChatUsers() {
+            const input = document.getElementById('chat-search-input').value.toLowerCase();
+            const btns = document.querySelectorAll('.user-chat-btn');
+            btns.forEach(btn => {
+                const name = btn.getAttribute('data-name');
+                if(name.includes(input)) btn.style.display = 'flex';
+                else btn.style.display = 'none';
+            });
+        }
+
+        function selectChatRoom(targetId) {
+            const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
+            
+            // Köhnə dinləyiciləri bağlayırıq
+            if(chatMessagesListener) chatMessagesListener.off();
+            if(chatTypingListener) chatTypingListener.off();
+
+            let msgsPath = '';
+            let typingPath = '';
+
+            if(targetId === 'group') {
+                activeChatRoom = 'group';
+                document.getElementById('chat-active-name').innerText = "AZL Training";
+                document.getElementById('chat-active-avatar').innerHTML = '<i class="fa-solid fa-users"></i>';
+                msgsPath = 'chat/messages';
+                typingPath = 'chat/typing';
+            } else {
+                const targetUser = registeredUsersMap[targetId];
+                if(!targetUser) return;
+                
+                // Şəxsi otaq ID-si yaratmaq (Həmişə eyni otaq çıxması üçün ID-ləri sort edirik)
+                activeChatRoom = [myPhoneKey, targetId].sort().join('_');
+                
+                document.getElementById('chat-active-name').innerText = targetUser.fullName;
+                const initials = targetUser.fullName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+                document.getElementById('chat-active-avatar').innerHTML = initials;
+                
+                msgsPath = `chat/private/${activeChatRoom}/messages`;
+                typingPath = `chat/private/${activeChatRoom}/typing`;
+            }
+
+            highlightActiveContact(targetId);
+
+            // Mesajları dinlə
+            chatMessagesListener = db.ref(msgsPath);
+            chatMessagesListener.on('value', snap => {
+                renderChatMessages(snap.val() || {});
+                if(document.getElementById('chat').classList.contains('active')) markChatRead(msgsPath);
+            });
+
+            // Yazır... bildirişini dinlə
+            chatTypingListener = db.ref(typingPath);
+            chatTypingListener.on('value', snap => {
                 const typingUsers = snap.val() || {};
                 const indicator = document.getElementById('chat-typing-indicator');
                 const typerNames = [];
@@ -1059,27 +1091,24 @@
                 }
             });
             
-            const inputEl = document.getElementById('chat-input');
-            inputEl.addEventListener('input', function() {
-                db.ref('chat/typing/' + myPhoneKey).set({ isTyping: true, name: currentUser.fullName || currentUser.name });
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    db.ref('chat/typing/' + myPhoneKey).set({ isTyping: false });
-                }, 2000);
-            });
-            
-            inputEl.addEventListener('keypress', function(e) {
-                if(e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendChatMessage();
-                }
-            });
+            // Mobil görünüşdə sağ paneli göstərmək üçün
+            if(window.innerWidth < 768) {
+                // Əgər spesifik bir mobil tərtibat olsaydı, burada solu gizlədib sağı göstərərdik.
+                // İndi sadəcə scrollu düzəldirik.
+            }
         }
 
-        function markChatRead() {
-             if(!currentUser) return;
+        function highlightActiveContact(targetId = null) {
+            if(!targetId) targetId = activeChatRoom === 'group' ? 'group' : activeChatRoom.replace(currentUser.phone.replace(/[^0-9+]/g, ''), '').replace('_', '');
+            document.querySelectorAll('.contact-btn').forEach(btn => btn.classList.remove('contact-active'));
+            const activeBtn = document.getElementById(`chat-btn-${targetId}`);
+            if(activeBtn) activeBtn.classList.add('contact-active');
+        }
+
+        function markChatRead(msgsPath) {
+             if(!currentUser || !msgsPath) return;
              const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
-             db.ref('chat/messages').once('value').then(snap => {
+             db.ref(msgsPath).once('value').then(snap => {
                  const msgs = snap.val() || {};
                  let updates = {};
                  Object.keys(msgs).forEach(key => {
@@ -1088,7 +1117,7 @@
                      }
                  });
                  if(Object.keys(updates).length > 0) {
-                     db.ref('chat/messages').update(updates);
+                     db.ref(msgsPath).update(updates);
                  }
              });
         }
@@ -1107,7 +1136,9 @@
                 status: 'sent' 
             };
             
-            const msgRef = db.ref('chat/messages').push();
+            const msgsPath = activeChatRoom === 'group' ? 'chat/messages' : `chat/private/${activeChatRoom}/messages`;
+            const msgRef = db.ref(msgsPath).push();
+            
             msgRef.set(msgData).then(() => {
                 setTimeout(() => {
                     msgRef.once('value').then(snap => {
@@ -1119,7 +1150,8 @@
             });
             
             input.value = '';
-            db.ref('chat/typing/' + myPhoneKey).set({ isTyping: false });
+            const typingPath = activeChatRoom === 'group' ? 'chat/typing/' + myPhoneKey : `chat/private/${activeChatRoom}/typing/${myPhoneKey}`;
+            db.ref(typingPath).set({ isTyping: false });
         }
 
         function renderChatMessages(msgsObj) {
@@ -1127,7 +1159,6 @@
             const myPhoneKey = currentUser ? currentUser.phone.replace(/[^0-9+]/g, '') : '';
             const msgs = Object.values(msgsObj).sort((a,b) => a.timestamp - b.timestamp);
             
-            // Keep the security warning at the top
             let html = `<div class="text-center w-full"><span class="bg-[#ffeecd] px-3 py-1.5 rounded-lg text-[11px] text-slate-700 shadow-sm"><i class="fa-solid fa-lock mr-1 text-[10px]"></i> Mesajlar ucdan-uca şifrələnir.</span></div>`;
 
             html += msgs.map((msg, index) => {
@@ -1163,7 +1194,7 @@
                     <div class="flex items-end gap-2 w-full mb-1">
                         ${showAvatar ? `<div class="w-8 h-8 rounded-full bg-[#128C7E] text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-sm">${initials}</div>` : `<div class="w-8 h-8 shrink-0"></div>`}
                         <div class="chat-bubble chat-recv relative">
-                            ${showAvatar ? `<div class="text-[11px] font-bold text-[#128C7E] mb-1">${msg.senderName}</div>` : ''}
+                            ${showAvatar && activeChatRoom === 'group' ? `<div class="text-[11px] font-bold text-[#128C7E] mb-1">${msg.senderName}</div>` : ''}
                             <span>${msg.text}</span>
                             <div class="text-[10px] text-slate-400 text-right mt-1 font-medium float-right ml-3 pt-1">
                                 ${time}
@@ -1174,11 +1205,7 @@
             }).join('');
             
             container.innerHTML = html;
-            
-            // Scroll to bottom only if user is already near bottom or it's a new message
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 50);
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
         }
         // --- CHAT FUNKSİYALARI SONU ---
 
@@ -1212,7 +1239,6 @@
             });
 
             initChat(); 
-
             applyTrans();
         }
 
@@ -1258,7 +1284,6 @@
             }
 
             countLabel.innerText = `${allVisits.length} Əməliyyat`;
-            
             const latestVisits = allVisits.slice(0, 15);
             
             if(miniFeedContainer) {
@@ -1425,7 +1450,6 @@
                 if (selectedRep && rep !== selectedRep) continue;
 
                 const visits = tempDB[rep] ? [...tempDB[rep]].sort((a,b) => a.timestamp - b.timestamp) : [];
-
                 if(visits.length === 0) continue; 
 
                 const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
@@ -2120,9 +2144,11 @@
                 welcomeMsg.style.display = 'none';
                 gTitleContainer.style.display = 'block';
                 hFilterContainer.style.display = 'none';
-                markChatRead();
-                document.getElementById('chat-badge').classList.add('hidden');
-                document.getElementById('chat-badge-solid').classList.add('hidden');
+                
+                // Chat bölməsinə keçəndə aktiv otaqdakı mesajları oxunmuş olaraq işarələ
+                const msgsPath = activeChatRoom === 'group' ? 'chat/messages' : `chat/private/${activeChatRoom}/messages`;
+                markChatRead(msgsPath);
+                
                 setTimeout(() => {
                     const c = document.getElementById('chat-messages');
                     if(c) c.scrollTop = c.scrollHeight;
