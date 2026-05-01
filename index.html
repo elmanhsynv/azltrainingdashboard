@@ -693,7 +693,6 @@
 
                 <!-- DİNAMİK VƏ MOBİL OPTİMİZA EDİLMİŞ CHAT BÖLMƏSİ -->
                 <div id="chat" class="section-content h-full">
-                    <!-- Hündürlüyü dinamik tənzimləmək üçün h-[75vh] və flex istifadə edildi -->
                     <div class="max-w-6xl mx-auto h-[75vh] min-h-[500px] glass-card flex overflow-hidden shadow-2xl relative w-full">
                         
                         <!-- Sol Tərəf: Kontaktlar (Mobildə tam ekran, Desktopda 1/3) -->
@@ -714,7 +713,7 @@
                         <div id="chat-main" class="w-full md:w-2/3 bg-[#efeae2] relative h-full hidden md:flex flex-col transition-all">
                             <div class="p-3 border-b border-slate-200 bg-[#f0f2f5] flex items-center justify-between z-10 shrink-0">
                                 <div class="flex items-center gap-2">
-                                    <!-- YENİ: Mobildə geri qayıtmaq üçün düymə -->
+                                    <!-- Mobildə geri qayıtmaq üçün düymə -->
                                     <button onclick="closeMobileChat()" class="md:hidden text-slate-500 hover:text-[#00a884] px-2 py-1 transition-colors">
                                         <i class="fa-solid fa-arrow-left text-lg"></i>
                                     </button>
@@ -724,7 +723,11 @@
                                         <p class="text-[11px] text-[#00a884]" id="chat-typing-indicator" style="display:none;">yazır...</p>
                                     </div>
                                 </div>
-                                <div class="text-slate-400 hover:text-blue-600 cursor-pointer transition-colors"><i class="fa-solid fa-circle-info"></i></div>
+                                <!-- YENİ: Çatı Təmizləmə və Məlumat İkonları -->
+                                <div class="flex items-center gap-3 text-slate-400">
+                                    <button onclick="clearChatConfirm()" class="hover:text-rose-500 transition-colors" title="Söhbəti təmizlə"><i class="fa-solid fa-trash-can text-lg"></i></button>
+                                    <div class="hover:text-blue-600 cursor-pointer transition-colors"><i class="fa-solid fa-circle-info text-lg"></i></div>
+                                </div>
                             </div>
                             
                             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 flex flex-col chat-scroll relative">
@@ -968,11 +971,27 @@
             } catch(e) { alert("Xəta baş verdi: " + e.message); }
         }
 
-        // --- YENİLƏNMİŞ MOBİL OPTİMİZA EDİLMİŞ CHAT FUNKSİYALARI ---
+        // --- YENİ ÇATI SİLMƏK FUNKSİYASI ---
+        window.clearChatConfirm = function() {
+            const roomName = document.getElementById('chat-active-name').innerText;
+            if(confirm(`${roomName} ilə olan bütün mesajları silmək istədiyinizə əminsiniz?\n\nBu əməliyyat geri qaytarıla bilməz və mesajlar hər iki tərəf üçün silinəcək.`)) {
+                const msgsPath = activeChatRoom === 'group' ? 'chat/messages' : `chat/private/${activeChatRoom}/messages`;
+                
+                db.ref(msgsPath).remove().then(() => {
+                    // Mesajlar silindikdə ekran onsuzda real-time təmizlənəcək, 
+                    // amma vizual olaraq məlumat veririk.
+                    document.getElementById('chat-messages').innerHTML = `
+                        <div class="text-center w-full"><span class="bg-[#ffeecd] px-3 py-1.5 rounded-lg text-[11px] text-slate-700 shadow-sm"><i class="fa-solid fa-lock mr-1 text-[10px]"></i> Mesajlar ucdan-uca şifrələnir.</span></div>
+                        <p class="text-xs text-slate-400 text-center mt-4 italic"><i class="fa-solid fa-trash-can mr-1"></i>Söhbət keçmişi təmizləndi.</p>
+                    `;
+                }).catch(e => alert("Söhbət silinərkən xəta baş verdi: " + e));
+            }
+        }
+
         function initChat() {
             if(!currentUser) return;
             loadChatUsers();
-            selectChatRoom('group', false); // Başlanğıcda qrup açılır, amma mobil görünüşü tətikləməyə ehtiyac yoxdur
+            selectChatRoom('group', false); 
             
             const inputEl = document.getElementById('chat-input');
             const myPhoneKey = currentUser.phone.replace(/[^0-9+]/g, '');
@@ -1068,7 +1087,6 @@
 
             highlightActiveContact(targetId);
 
-            // YENİ: Mobildə istifadəçi siyahıdan kimisə seçibsə, söhbət panelinə keç
             if(userInitiated && window.innerWidth < 768) {
                 document.getElementById('chat-sidebar').classList.add('hidden');
                 document.getElementById('chat-main').classList.remove('hidden');
@@ -1101,7 +1119,6 @@
             });
         }
 
-        // YENİ: Mobildə söhbətdən geri (kontakt siyahısına) qayıtmaq üçün funksiya
         window.closeMobileChat = function() {
             document.getElementById('chat-sidebar').classList.remove('hidden');
             document.getElementById('chat-main').classList.add('hidden');
@@ -1171,6 +1188,11 @@
             
             let html = `<div class="text-center w-full"><span class="bg-[#ffeecd] px-3 py-1.5 rounded-lg text-[11px] text-slate-700 shadow-sm"><i class="fa-solid fa-lock mr-1 text-[10px]"></i> Mesajlar ucdan-uca şifrələnir.</span></div>`;
 
+            if(msgs.length === 0) {
+                container.innerHTML = html + `<p class="text-xs text-slate-400 text-center mt-4 italic">Heç bir mesaj yoxdur.</p>`;
+                return;
+            }
+
             html += msgs.map((msg, index) => {
                 const isMine = msg.senderKey === myPhoneKey;
                 const date = new Date(msg.timestamp);
@@ -1216,7 +1238,6 @@
             container.innerHTML = html;
             setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
         }
-        // --- CHAT FUNKSİYALARI SONU ---
 
         function initApp() {
             document.getElementById('auth-screen').style.display = 'none';
@@ -2154,7 +2175,6 @@
                 gTitleContainer.style.display = 'block';
                 hFilterContainer.style.display = 'none';
                 
-                // MOBİL YENİLƏNƏNDƏ DEFAULT OLARAQ SİYAHINI GÖSTƏR
                 if(window.innerWidth < 768) {
                     document.getElementById('chat-sidebar').classList.remove('hidden');
                     document.getElementById('chat-main').classList.add('hidden');
