@@ -1022,7 +1022,7 @@
                 const parts = fullName.split(' ');
                 const initials = parts.length > 1 ? (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase() : parts[0].substring(0,2).toUpperCase();
                 document.getElementById('profile-initials').innerText = initials || "AZ";
-                document.getElementById('welcome-message').innerText = `XOŞ GƏLDİN, ${parts[0].toUpperCase()}!`;
+                document.getElementById('welcome-message').innerText = `Xoş gəldin, ${parts[0].toUpperCase()}!`;
                 alert("Profil məlumatları yeniləndi!");
             } catch(e) { alert("Xəta baş verdi: " + e.message); }
         }
