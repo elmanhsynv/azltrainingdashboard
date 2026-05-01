@@ -199,8 +199,13 @@
                         <h1 id="page-title" class="text-2xl md:text-3xl font-black uppercase text-[#02117b] tracking-tighter hover:scale-[1.01] transition-transform cursor-default">PERFORMANS ANALİZİ</h1>
                         <p id="welcome-message" class="text-[12px] font-black text-slate-400 mt-1 uppercase tracking-wider"></p>
                     </div>
-                    <div id="header-filter-container" class="w-full lg:w-auto flex items-center gap-2">
+                    <div id="header-filter-container" class="w-full lg:w-auto flex items-center gap-2 flex-wrap md:flex-nowrap">
                         <i class="fa-solid fa-filter text-slate-400 hidden md:block"></i>
+                        
+                        <!-- YENİ: Qlobal Tarix Filtri -->
+                        <input type="text" id="global-start-date" placeholder="Başlanğıc" class="glass-card w-full md:w-auto px-4 md:px-5 py-3 font-black text-xs outline-none hover:shadow-md transition-all cursor-pointer bg-white" style="max-width: 130px;">
+                        <input type="text" id="global-end-date" placeholder="Bitiş" class="glass-card w-full md:w-auto px-4 md:px-5 py-3 font-black text-xs outline-none hover:shadow-md transition-all cursor-pointer bg-white" style="max-width: 130px;">
+
                         <select id="rep-selector" onchange="updateDashboard()" class="glass-card w-full px-4 md:px-6 py-3 font-black text-xs min-w-[220px] outline-none hover:shadow-md transition-all cursor-pointer">
                             <option value="" data-i18n="all_reps">Bütün Nümayəndələr</option>
                             <option value="Loğman Bayramov">Loğman Bayramov</option>
@@ -244,6 +249,25 @@
                     <button onclick="openNewChecklist()" class="w-full bg-[#02117b] text-white py-4 rounded-2xl shadow-xl shadow-[#02117b]/30 font-black text-sm uppercase flex items-center justify-center gap-3 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#02117b]/40 transition-all mb-8 md:hidden">
                         <i class="fa-solid fa-plus-circle text-lg"></i> <span data-i18n="btn_quick_create">Yeni Checklist Yarat</span>
                     </button>
+
+                    <!-- YENİ: İcraçı Xülasə (Executive Summary) Paneli -->
+                    <div id="executive-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 hidden md:grid">
+                        <div class="glass-card p-5 border-l-4 border-blue-500 bg-gradient-to-r from-blue-50 to-white hover:shadow-md transition-all">
+                            <p class="text-[10px] font-black uppercase text-blue-600 mb-1 tracking-widest"><i class="fa-solid fa-chart-line mr-1"></i> Departament Uğur Faizi</p>
+                            <h4 id="exec-success-rate" class="text-3xl font-black text-blue-800 my-2">0%</h4>
+                            <p id="exec-comparison" class="text-[10px] font-bold text-slate-500"></p>
+                        </div>
+                        <div class="glass-card p-5 border-l-4 border-rose-500 bg-gradient-to-r from-rose-50 to-white hover:shadow-md transition-all">
+                            <p class="text-[10px] font-black uppercase text-rose-600 mb-1 tracking-widest"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Böhranlı Məntəqələr</p>
+                            <h4 id="exec-critical-points" class="text-3xl font-black text-rose-800 my-2">0</h4>
+                            <p class="text-[10px] font-bold text-slate-500">Ortalaması 50-dən aşağı olanlar</p>
+                        </div>
+                        <div class="glass-card p-5 border-l-4 border-amber-500 bg-gradient-to-r from-amber-50 to-white hover:shadow-md transition-all">
+                            <p class="text-[10px] font-black uppercase text-amber-600 mb-1 tracking-widest"><i class="fa-solid fa-headset mr-1"></i> Təcil Təlim Ehtiyacı</p>
+                            <h4 id="exec-urgent-reps" class="text-3xl font-black text-amber-800 my-2">0</h4>
+                            <p class="text-[10px] font-bold text-slate-500">Son 3 yoxlaması zəif olanlar</p>
+                        </div>
+                    </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                         <div class="stat-card glass-card p-4 md:p-8 bg-gradient-to-br from-blue-600 to-indigo-500 text-white shadow-blue-500/20 shadow-xl">
@@ -785,6 +809,11 @@
                 disableMobile: true 
             };
 
+            flatpickr("#global-start-date, #global-end-date", { 
+                ...fpConfig, 
+                onChange: function() { updateDashboard(); } 
+            });
+
             flatpickr("#reytinq-start-date, #reytinq-end-date", { 
                 ...fpConfig, 
                 onChange: function() { updateReytinqPage(); } 
@@ -949,7 +978,8 @@
                 database = {};
                 allVisitsGlobal = [];
                 if(data) {
-                    Object.values(data).forEach(v => {
+                    Object.entries(data).forEach(([key, v]) => {
+                        v.key = key; // Daxili qeydlər üçün açar
                         if(!database[v.rep]) database[v.rep] = [];
                         database[v.rep].push(v);
                         allVisitsGlobal.push(v);
@@ -1038,14 +1068,25 @@
             }).join('');
         }
 
-        function renderLeaderboard() {
+        function renderLeaderboard(visArray) {
             const listContainer = document.getElementById('leaderboard-list');
             if(!listContainer) return;
             
+            let tempDB = {};
+            if(visArray) {
+                visArray.forEach(v => {
+                    if(!tempDB[v.rep]) tempDB[v.rep] = [];
+                    tempDB[v.rep].push(v);
+                });
+            } else {
+                tempDB = database; 
+            }
+
             const repStats = [];
 
-            for (const rep in database) {
-                const visits = [...database[rep]].sort((a,b) => a.timestamp - b.timestamp);
+            for (const rep in tempDB) {
+                const visits = [...tempDB[rep]].sort((a,b) => a.timestamp - b.timestamp);
+                if(visits.length === 0) continue;
                 const avg = visits.reduce((sum, v) => sum + v.score, 0) / visits.length;
                 
                 let delta = 0;
@@ -1365,13 +1406,19 @@
             }
         }
 
-        function updateOrientationModule(allVisits) {
+        function updateOrientationModule(filtered) {
             const orientContainer = document.getElementById('orientation-list');
             if(!orientContainer) return;
             
+            let tempDB = {};
+            filtered.forEach(v => {
+                if(!tempDB[v.rep]) tempDB[v.rep] = [];
+                tempDB[v.rep].push(v);
+            });
+
             let html = "";
-            for (const rep in database) {
-                const count = database[rep].length;
+            for (const rep in tempDB) {
+                const count = tempDB[rep].length;
                 if(count <= 3) {
                     let day = count === 0 ? 0 : count;
                     let prog = (day / 3) * 100;
@@ -1399,17 +1446,79 @@
             let allVisits = [...allVisitsGlobal];
             allVisits.sort((a,b) => b.timestamp - a.timestamp); 
 
-            const filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
+            let filtered = selectedRep ? allVisits.filter(v => v.rep === selectedRep) : allVisits;
+            
+            // YENİ: Qlobal Tarix Filtri tətbiqi
+            const gStart = document.getElementById('global-start-date').value;
+            const gEnd = document.getElementById('global-end-date').value;
+            if(gStart) {
+                const startStamp = new Date(gStart).setHours(0,0,0,0);
+                filtered = filtered.filter(v => v.timestamp >= startStamp);
+            }
+            if(gEnd) {
+                const endStamp = new Date(gEnd).setHours(23,59,59,999);
+                filtered = filtered.filter(v => v.timestamp <= endStamp);
+            }
+
+            // YENİ: İcraçı Xülasə Hesablamaları
+            const overallAvg = filtered.length ? Math.round(filtered.reduce((a,b)=>a+b.score,0)/filtered.length) : 0;
+            const execSuccessRate = document.getElementById('exec-success-rate');
+            if(execSuccessRate) execSuccessRate.innerText = overallAvg + "%";
+
+            // Keçən Ay vs Bu Ay
+            const now = Date.now();
+            const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+            const currentMonthVisits = filtered.filter(v => now - v.timestamp <= thirtyDays);
+            const lastMonthVisits = filtered.filter(v => now - v.timestamp > thirtyDays && now - v.timestamp <= thirtyDays * 2);
+
+            const currentMonthAvg = currentMonthVisits.length ? currentMonthVisits.reduce((a,b)=>a+b.score,0)/currentMonthVisits.length : overallAvg;
+            const lastMonthAvg = lastMonthVisits.length ? lastMonthVisits.reduce((a,b)=>a+b.score,0)/lastMonthVisits.length : overallAvg;
+            const diff = currentMonthAvg - lastMonthAvg;
+
+            const compEl = document.getElementById('exec-comparison');
+            if(compEl) {
+                if(lastMonthVisits.length === 0) {
+                    compEl.innerHTML = `<span class="text-slate-500">Müqayisə üçün keçmiş data yoxdur</span>`;
+                } else if(diff > 0) {
+                    compEl.innerHTML = `<span class="text-emerald-500"><i class="fa-solid fa-arrow-up"></i> +${diff.toFixed(1)} Bal</span> keçən 30 günlə müqayisədə`;
+                } else if(diff < 0) {
+                    compEl.innerHTML = `<span class="text-rose-500"><i class="fa-solid fa-arrow-down"></i> ${Math.abs(diff).toFixed(1)} Bal</span> keçən 30 günlə müqayisədə`;
+                } else {
+                    compEl.innerHTML = `<span class="text-slate-500"><i class="fa-solid fa-minus"></i> Dəyişiklik yoxdur</span>`;
+                }
+            }
+
+            // Böhranlı Məntəqələr
+            let criticalPoints = new Set();
+            filtered.forEach(v => {
+                if(v.score < 50) criticalPoints.add(v.code);
+            });
+            const execCritical = document.getElementById('exec-critical-points');
+            if(execCritical) execCritical.innerText = criticalPoints.size;
+
+            // Təcil Təlim Ehtiyacı Olanlar
+            let repPerf = {};
+            filtered.forEach(v => {
+                if(!repPerf[v.rep]) repPerf[v.rep] = [];
+                repPerf[v.rep].push(v);
+            });
+            let urgentCount = 0;
+            for(let r in repPerf) {
+                let last3 = repPerf[r].sort((a,b)=>b.timestamp - a.timestamp).slice(0,3);
+                if(last3.length >= 3 && last3.every(v => v.score < 60)) {
+                    urgentCount++;
+                }
+            }
+            const execUrgent = document.getElementById('exec-urgent-reps');
+            if(execUrgent) execUrgent.innerText = urgentCount;
 
             animateValue('total-visits-stat', 0, filtered.length, 1000);
-            const avg = filtered.length ? Math.round(filtered.reduce((a,b) => a + b.score, 0) / filtered.length) : 0;
-            animateValue('rep-avg-stat', 0, avg, 1000);
+            animateValue('rep-avg-stat', 0, overallAvg, 1000);
             const maxScore = filtered.length ? Math.max(...filtered.map(v => v.score)) : 0;
             animateValue('last-point-score', 0, maxScore, 1000);
 
-            updateOrientationModule(allVisits);
-
-            renderLeaderboard();
+            updateOrientationModule(filtered);
+            renderLeaderboard(filtered);
             renderSystemicGaps(filtered); 
             renderRiskReps(filtered);    
 
@@ -1417,7 +1526,7 @@
             
             updateChecklistFilters();
             
-            renderActivityFeed(allVisits); 
+            renderActivityFeed(filtered); 
             
             updateReytinqPage();
         }
@@ -1478,7 +1587,6 @@
             const catNames = ['4+4', 'BeşdəBeş', 'Super Keno', 'Poz-qazan', 'Terminal'];
             const catIcons = ['fa-dice', 'fa-star', 'fa-gem', 'fa-ticket', 'fa-desktop'];
             
-            // Re-calculate accurate averages for categories
             let avgCatData = [0, 0, 0, 0, 0];
             if (filtered.length > 0) {
                 let sums = [0, 0, 0, 0, 0];
@@ -1624,20 +1732,16 @@
             if(closeBtn) closeBtn.style.display = 'none';
             if(downloadBtn) downloadBtn.style.display = 'none';
 
-            // Əvvəlki orijinal ölçüləri yadda saxlayaq
             const origHeight = element.style.height;
             const origMaxHeight = element.style.maxHeight;
             const origOverflow = body.style.overflowY;
             const origWidth = element.style.width;          
             const origMaxWidth = element.style.maxWidth;    
 
-            // Bütün məlumatın görünməsi üçün hündürlüyü açırıq
             element.style.height = 'auto';
             element.style.maxHeight = 'none';
             body.style.overflowY = 'visible';
 
-            // KİÇİLTMƏ HİYLƏSİ: Eni süni olaraq 900px edirik. 
-            // PDF bunu A4-ə sığdırmaq üçün avtomatik miqyası (scale) kiçildəcək və 2 səhifəyə yerləşdirəcək.
             element.style.width = '900px';
             element.style.maxWidth = '900px';
 
@@ -1651,7 +1755,6 @@
             };
             
             html2pdf().from(element).set(opt).save().then(() => {
-                // PDF uğurla yükləndikdən sonra hər şeyi köhnə vəziyyətinə (orijinala) qaytarırıq
                 if(closeBtn) closeBtn.style.display = 'flex';
                 if(downloadBtn) downloadBtn.style.display = 'flex';
                 
@@ -1709,6 +1812,19 @@
                 html += `<div class="p-10 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-2xl shadow-inner"><i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>Köhnə format ziyarət - Ətraflı detallar yadda saxlanılmayıb.</div>`;
             }
 
+            // YENİ ƏLAVƏ: Daxili Action Plan / Qeyd
+            if (visit.key) {
+                html += `
+                <div class="bg-indigo-50/40 rounded-2xl p-5 border border-indigo-100 mt-6" style="page-break-inside: avoid;">
+                    <h4 class="font-black text-indigo-700 uppercase text-[10px] tracking-widest mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-user-secret mr-2"></i>Daxili Rəhbərlik Qeydi (Action Plan)</span>
+                        <span id="action-note-status-${visit.key}" class="text-emerald-600 hidden"><i class="fa-solid fa-check mr-1"></i> Saxlanıldı</span>
+                    </h4>
+                    <textarea id="action-plan-note-${visit.key}" class="w-full p-4 rounded-xl bg-white border border-indigo-200 focus:border-indigo-500 outline-none text-xs font-bold transition-all min-h-[80px]" placeholder="Yalnız rəhbərliyin görə biləcəyi hərəkət planı və ya status yazın...">${visit.actionNote || ''}</textarea>
+                    <button onclick="saveActionNote('${visit.key}')" class="mt-3 bg-indigo-600 text-white px-5 py-3 rounded-xl text-[10px] font-black uppercase hover:bg-indigo-700 hover:-translate-y-0.5 transition-all shadow-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Qeydi Yadda Saxla</button>
+                </div>`;
+            }
+
             document.getElementById('modal-body').innerHTML = html;
             
             const modal = document.getElementById('visit-modal');
@@ -1748,7 +1864,6 @@
                 }
             }
 
-            // Mobil paneli avtomatik bağlamaq (yeni əlavə edilən kod)
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 const overlay = document.getElementById('mobile-overlay');
@@ -1961,13 +2076,13 @@
             const repPart = rep ? rep.replace(/\s+/g, '_') : 'Butun_Numayendeler';
 
             const opt = {
-    margin:       [10, 10, 15, 10], // PDF boşluqları: [Yuxarı, Sağ, Aşağı, Sol]
-    filename:     `AZL_Hesabat_${repPart}_${suffixFormat}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowY: 0 }, // Xətanın həlli
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:    { mode: ['css', 'legacy'] }
-};
+                margin:       [10, 10, 15, 10],
+                filename:     `AZL_Hesabat_${repPart}_${suffixFormat}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
             
             const btn = document.querySelector('button[onclick="downloadReport()"]');
             const originalText = btn.innerHTML;
@@ -2235,6 +2350,18 @@
             }
 
             expandedChartInstance = new Chart(ctx, { type, data, options });
+        }
+
+        // YENİ ƏLAVƏ: Daxili rəhbərlik qeydinin (Action Plan) bazada yadda saxlanması üçün funksiya
+        window.saveActionNote = function(key) {
+            const val = document.getElementById('action-plan-note-' + key).value;
+            db.ref('visits/' + key).update({ actionNote: val }).then(() => {
+                const status = document.getElementById('action-note-status-' + key);
+                if(status) {
+                    status.classList.remove('hidden');
+                    setTimeout(() => status.classList.add('hidden'), 3000);
+                }
+            }).catch(e => alert("Xəta baş verdi: " + e));
         }
 
         window.onload = () => { 
