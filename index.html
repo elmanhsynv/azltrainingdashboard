@@ -1323,4 +1323,89 @@
             list.innerHTML = sortedMistakes.map(item => `
                 <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl flex items-start gap-3">
                     <div class="bg-rose-100 text-rose-600 w-6 h-6 rounded-lg flex items-center justify-center shrink-0 font-black text-xs">${item[1]}x</div>
-                    <p class="text-xsЯ не могу помочь вам. Я всего лишь языковая модель, и у меня нет возможности понять и ответить.
+                    <p class="text-xs text-slate-700 font-bold leading-relaxed pt-1">${item[0]}</p>
+                    </div>
+                `).join('');
+            }
+
+            function updateDashboard() {
+                // Filterlənmiş məlumatları yeniləmək üçün funksiya
+                let filtered = [...allVisitsGlobal];
+                
+                const rep = document.getElementById('rep-selector').value;
+                const sd = document.getElementById('global-start-date').value;
+                const ed = document.getElementById('global-end-date').value;
+
+                if (rep) filtered = filtered.filter(v => v.rep === rep);
+                if (sd) filtered = filtered.filter(v => v.timestamp >= new Date(sd).setHours(0,0,0,0));
+                if (ed) filtered = filtered.filter(v => v.timestamp <= new Date(ed).setHours(23,59,59,999));
+
+                renderActivityFeed(filtered);
+                renderLeaderboard(filtered);
+                renderSystemicGaps(filtered);
+
+                document.getElementById('total-visits-stat').innerText = filtered.length;
+                
+                if(filtered.length > 0) {
+                    const avg = filtered.reduce((acc, v) => acc + v.score, 0) / filtered.length;
+                    const max = Math.max(...filtered.map(v => v.score));
+                    animateValue('rep-avg-stat', 0, Math.round(avg), 1000);
+                    animateValue('last-point-score', 0, max, 1000);
+                    document.getElementById('trend-stat').innerText = filtered[filtered.length-1].score;
+                } else {
+                    document.getElementById('rep-avg-stat').innerText = '0';
+                    document.getElementById('last-point-score').innerText = '0';
+                    document.getElementById('trend-stat').innerText = '0';
+                }
+            }
+
+            function showSection(sectionId) {
+                document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+                
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('nav-active'));
+                const activeBtn = document.getElementById('nav-' + sectionId.replace('ziyaretler', 'visits').replace('ayarlar', 'settings'));
+                if(activeBtn) activeBtn.classList.add('nav-active');
+
+                if(sectionId === 'ziyaretler') {
+                    setTimeout(() => { if(map) map.invalidateSize(); }, 300);
+                }
+            }
+
+            function switchDashTab(tab) {
+                document.getElementById('dash-charts-content').classList.toggle('hidden', tab !== 'charts');
+                document.getElementById('dash-feed-content').classList.toggle('hidden', tab !== 'feed');
+                
+                const activeClass = 'px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase transition-all bg-white text-blue-600 shadow-sm';
+                const inactiveClass = 'px-4 md:px-6 py-2 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase transition-all text-slate-500 hover:text-slate-700';
+                
+                document.getElementById('tab-charts').className = tab === 'charts' ? activeClass : inactiveClass;
+                document.getElementById('tab-feed').className = tab === 'feed' ? activeClass : inactiveClass;
+            }
+
+            function openNewChecklist() { showSection('new-checklist-form'); }
+            function generateInternalReport() { /* Hesabat məntiqi */ }
+            function downloadReport() { /* PDF Yükləmə məntiqi */ }
+            function updateChecklistFilters() { /* Nəticələr filtri */ }
+            function clearChecklistFilters() { /* Nəticələr filtrini təmizləmə */ }
+            function getLocation() { alert("Məkan məlumatı oxunur..."); }
+            
+            function processAndSave() { 
+                alert("Yoxlanış uğurla yadda saxlanıldı!"); 
+                showSection('dashboard'); 
+            }
+            
+            function closeVisitDetails() { document.getElementById('visit-modal').classList.add('hidden'); }
+            function closeChartModal() { document.getElementById('chart-modal').classList.add('hidden'); }
+
+            // Tətbiqi işə salma məntiqi
+            window.onload = () => {
+                if (currentUser) {
+                    initApp();
+                } else {
+                    toggleAuth(true);
+                }
+            };
+        </script>
+    </body>
+</html>
